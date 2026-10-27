@@ -1,9 +1,23 @@
 # Réplica de los experimentos de la tesis para n carriles (2, 3 y 4), registrando colisiones.
-# Uso: julia corre_n.jl <worker> <nworkers> <salida.csv>
+# Uso: julia corre_n.jl <worker> <nworkers> <salida.csv> [modelo] [limite]
+#   modelo = original      el modelo de la tesis, sin cambios (valor por defecto)
+#            colisiones    solo las correcciones de colisiones (separación con signo, no cambiar detrás de
+#                          un auto que gira, líder por fantasma, velocidad no negativa), aceleración original
+#            experimental  las correcciones de colisiones más la aceleración IDM
+#   limite = corre solo los primeros `limite` trabajos (para pruebas rápidas)
 push!(LOAD_PATH, joinpath(@__DIR__, "..", "..", "src"))
 using TraficoOpt
 const TO = TraficoOpt
 const largo = 9/7; const d0 = 0.5; const ntot = 100; const pasos = 10000
+const MODELO = length(ARGS) > 3 ? ARGS[4] : "original"
+
+""" parámetros del modelo elegido en la línea de comandos (`MODELO`) """
+function parametros(; kw...)
+    MODELO == "original" && return Parametros(; kw...)
+    MODELO == "colisiones" && return parametros_experimentales(; modelo_aceleracion = :original, kw...)
+    MODELO == "experimental" && return parametros_experimentales(; kw...)
+    error("modelo desconocido: $MODELO (usar original, colisiones o experimental)")
+end
 
 """ llena los carriles en orden (como generar_distribucion_automatica, generalizado a nc carriles) """
 function distrib(L, nc)
@@ -29,7 +43,7 @@ end
 function corre(nc, ρ, ε, inc)
     L = ntot*(largo + d0)/(nc*ρ)
     ns = distrib(L, nc)
-    p = Parametros(L = L, egoismo = ε, incentivo_velocidad = inc, d_0 = fill(d0, nc))
+    p = parametros(L = L, egoismo = ε, incentivo_velocidad = inc, d_0 = fill(d0, nc))
     est = crear_estado(p, ns, fill(d0, nc))
     N = length(est.vehs)
     V = zeros(pasos); tc = Float64[]
@@ -95,7 +109,7 @@ end
 for nc in (3, 4, 2), ρ in (0.47, 0.53, 0.87), ε in (0.47, 0.89)
     push!(jobs, (nc, ρ, ε, false))
 end
-length(ARGS) > 3 && (jobs = jobs[1:parse(Int, ARGS[4])])
+length(ARGS) > 4 && (jobs = jobs[1:parse(Int, ARGS[5])])
 open(out, "w") do io
     for (j, job) in enumerate(jobs)
         (j - 1) % nw == worker || continue

@@ -60,7 +60,10 @@ function paso_auto!(est::Estado, i)
         k == 0 && continue
         sk = ranura(est, k, ℓ)
         mismo = k == i
-        sep = separacion_dos_autos(est.f_y[s, i], est.f_largo[s, i], est.f_y[sk, k], est.f_largo[sk, k], L; mismo)
+        # con `separacion_con_signo` la separación sale negativa si los autos ya se enciman y la
+        # regla de velocidad lo detiene (en el original, abs(sep) lo dejaba seguir avanzando)
+        sep = separacion_dos_autos(est.f_y[s, i], est.f_largo[s, i], est.f_y[sk, k], est.f_largo[sk, k], L;
+                                   mismo, con_signo = p.separacion_con_signo)
         v = velocidad_fantasma(p, p.d_0[ℓ], est.f_vy[s, i], est.f_largo[s, i], est.f_vy[sk, k], sep, mismo)
         vf = s == 1 ? (v, vf[2]) : (vf[1], v)
     end

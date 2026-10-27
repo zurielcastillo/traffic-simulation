@@ -32,9 +32,52 @@ Base.@kwdef struct Parametros
     # largo cero en su esquina delantera y puede "tapar" al verdadero auto de enfrente. Con esta opción
     # el orden dentro del carril se hace con la posición del fantasma en ese carril.
     lider_por_fantasma::Bool = false
+
+    # -----------------------------------------------------------------------------------------------
+    # Cambios experimentales (rama experimental_colisiones_idm). Todos vienen APAGADOS por defecto,
+    # así que con los valores por defecto el modelo sigue siendo idéntico al original. Para prenderlos
+    # todos de una vez usar `parametros_experimentales(...)` (definida abajo).
+    # -----------------------------------------------------------------------------------------------
+
+    # Colisiones 1: en el original `separacion_dos_autos` devuelve abs(sep). Si dos autos ya se enciman
+    # la separación real es negativa, pero la regla de velocidad recibe un número positivo y el auto de
+    # atrás NO frena: sigue metiéndose en el de enfrente. Con esta opción la separación conserva su signo
+    # y un auto encimado se detiene (y no se le permite cambiar de carril hacia un hueco negativo).
+    separacion_con_signo::Bool = false
+
+    # Colisiones 2: en 3 y 4 carriles los choques graves empiezan cuando dos autos seguidos cambian de
+    # carril juntos y el de enfrente se detiene a medio cambio. El original ya prohíbe empezar un cambio
+    # si el auto de enfrente en el carril ACTUAL está girando; esta opción también lo prohíbe si el auto
+    # de enfrente en el carril DESTINO está girando (va entrando o saliendo de ese carril).
+    no_cambiar_tras_auto_girando::Bool = false
+
+    # Aceleración: `:original` usa la velocidad segura de la tesis (el auto puede pasar de v_max a 0 en
+    # un solo paso de 0.1 s). `:idm` usa el Intelligent Driver Model (Treiber, Hennecke y Helbing, 2000),
+    # con aceleración y frenado acotados. Unidades del modelo: 1 unidad de distancia = 3.5 m y el tiempo
+    # en segundos, así que 1 unidad/s² = 3.5 m/s².
+    modelo_aceleracion::Symbol = :original
+    idm_a::Float64 = 0.3       # aceleración máxima cómoda: 0.3 u/s² ≈ 1.05 m/s² (auto de calle típico)
+    idm_b::Float64 = 0.6       # frenado cómodo: 0.6 u/s² ≈ 2.1 m/s²
+    idm_b_max::Float64 = 2.5   # frenado de emergencia (tope físico): 2.5 u/s² ≈ 8.75 m/s² (≈ 0.9 g)
+    idm_δ::Float64 = 4.0       # exponente de aceleración del IDM (valor estándar de la literatura)
 end
 
 numero_carriles(p::Parametros) = length(p.d_0)
+
+"""
+parametros_experimentales(; kw...)
+Parámetros con TODAS las correcciones experimentales prendidas (separación con signo, no cambiar
+detrás de un auto que gira, líder por fantasma, velocidad no negativa y aceleración IDM).
+Cualquier otro parámetro se pasa igual que a `Parametros`, por ejemplo
+`parametros_experimentales(L = 50.0, d_0 = fill(0.5, 3), egoismo = 0.47)`.
+"""
+function parametros_experimentales(; kw...)
+    base = (separacion_con_signo = true, no_cambiar_tras_auto_girando = true, lider_por_fantasma = true,
+            velocidad_no_negativa = true, modelo_aceleracion = :idm)
+    # `merge` deja que lo que pase el usuario (kw) reemplace a los valores de `base`,
+    # por ejemplo para apagar solo una de las correcciones
+    return Parametros(; merge(base, values(kw))...)
+end
 
 """ Un auto: rectángulo con posición (centro), 4 esquinas, velocidad y dirección """
 mutable struct Vehiculo

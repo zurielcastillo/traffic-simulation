@@ -166,11 +166,18 @@ function decide_cambiar(est::Estado, i, tgt, esquina)
     condiciones_tres_car(ys[ii], ys[jj], yc1, ls[ii], ls[jj], L) && return false
     # 2) distancia segura con el nuevo auto de enfrente
     d_segura = Δx_s(d_0, p.α, p.μ, p.g, p.T_reac, a.vel[2], p.colchon_distancia_segura)
-    d_auto = separacion_dos_autos(yc1, 0.0, ys[ii], ls[ii], L)
+    # (con separación con signo, si la esquina ya quedaría metida en el de enfrente d_auto < 0 y se rechaza)
+    cs = p.separacion_con_signo
+    d_auto = separacion_dos_autos(yc1, 0.0, ys[ii], ls[ii], L; con_signo = cs)
     d_segura > d_auto && return false
     # 3) egoísmo: no frenar demasiado al nuevo auto de atrás
-    d_j = separacion_dos_autos(ys[jj], ls[jj], yc1, 0.0, L)
+    d_j = separacion_dos_autos(ys[jj], ls[jj], yc1, 0.0, L; con_signo = cs)
+    # si el nuevo auto de atrás ya quedaría encimado con nosotros, no hay egoísmo que valga
+    cs && d_j < 0 && return false
     v_0 = vs[jj]
+    # Nota: con aceleración IDM este criterio se deja igual (velocidad SEGURA que necesitaría el de
+    # atrás según la fórmula de la tesis). Así ε conserva su significado: la fracción de velocidad que
+    # el auto está dispuesto a quitarle al de atrás.
     v = v_i(p.δt, d_0, p.α, p.μ, p.g, p.T_reac, v_0, a.vel[2], d_j, p.colchon, p.acel)
     1 - p.egoismo > v/v_0 && return false
     return true
@@ -214,13 +221,18 @@ function decide_cambiar_general(est::Estado, i, θ1, o, t)
     # separación con el de enfrente en el carril actual (el auto contra los fantasmas)
     lista_carril!(idx, ys, ls, vs, est, cur)
     ic, _ = vecinos_cercanos(ys, a.pos[2])
-    sep_cur = separacion_dos_autos(a.pos[2], a.largo, ys[ic], ls[ic], L)
+    cs = p.separacion_con_signo
+    sep_cur = separacion_dos_autos(a.pos[2], a.largo, ys[ic], ls[ic], L; con_signo = cs)
     vprom_cur = sum(vs)/length(vs)
     M = lista_carril!(idx, ys, ls, vs, est, tgt)
     if M > 0
         y2 = a.esq[esquina][2]
         it, _ = vecinos_cercanos(ys, y2)
-        sep_t = separacion_dos_autos(y2, 0.0, ys[it], ls[it], L)
+        # corrección experimental: si el auto de enfrente en el carril destino está a medio cambio
+        # de carril (entrando o saliendo), no se empieza el cambio. Es el patrón que origina los
+        # choques graves con 3 y 4 carriles: dos autos cambiando juntos y el de enfrente se detiene.
+        p.no_cambiar_tras_auto_girando && est.giro[idx[it]] && return false
+        sep_t = separacion_dos_autos(y2, 0.0, ys[it], ls[it], L; con_signo = cs)
         vprom_t = sum(vs)/M
     else
         sep_t = Inf; vprom_t = p.v_max

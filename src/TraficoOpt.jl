@@ -13,7 +13,7 @@ module TraficoOpt
 
 using LinearAlgebra, StaticArrays
 
-export Parametros, Estado, crear_estado, paso!, simular!, simular_registro, velocidad_promedio_y, choques,
+export Parametros, parametros_experimentales, Estado, crear_estado, paso!, simular!, simular_registro, velocidad_promedio_y, choques,
        medicion_velocidades_flujo_desplazamiento, simular_y_guardar, medicion_un_carril, posiciones_iniciales
 
 include("tipos.jl")
