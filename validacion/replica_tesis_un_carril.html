@@ -1,0 +1,50 @@
+<title>Un carril: simulación contra tesis</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f7f5;--panel:#fff;--fg:#1d2321;--muted:#5d6763;--line:#d9dedb;--sim:#0f7a6c;--t03:#5b4bc4;--tesis:#c8641c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141917;--panel:#1b211f;--fg:#e6ebe8;--muted:#9aa5a0;--line:#2e3633;--sim:#3fc2ac;--t03:#a99bff;--tesis:#f0924f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141917;--panel:#1b211f;--fg:#e6ebe8;--muted:#9aa5a0;--line:#2e3633;--sim:#3fc2ac;--t03:#a99bff;--tesis:#f0924f;color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,sans-serif;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+main{max-width:860px;margin:0 auto;display:grid;gap:32px}
+h1{font-size:1.9rem;margin:0;line-height:1.15;text-wrap:balance} h2{font-size:1.2rem;margin:0 0 8px}
+p{margin:0;max-width:68ch} .muted{color:var(--muted)}
+.fig{background:var(--panel);border:1px solid var(--line);padding:12px;height:320px}
+.leyenda{display:flex;gap:18px;flex-wrap:wrap;font-size:.9rem;margin:8px 0}
+.leyenda i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px}
+table{border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px;min-width:420px}
+th,td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:right} td:first-child,th:first-child{text-align:left}
+.tabla{overflow-x:auto}
+</style>
+<main>
+<header><h1>Un carril: la diferencia es el tiempo de reacción</h1>
+<p class="muted">Corrí el código de un carril (100 autos, 10 000 pasos, ε = 0) para cada ρ = k/15 y lo comparé con las Figuras 4.2 y 4.4. Las velocidades están en m/s (1 unidad = 3.5 m/s). Los puntos naranjas son valores leídos de tus figuras, así que son aproximados.</p></header>
+<section><p><b>Con T<sub>reac</sub> = 0.3 s la simulación reproduce las Figuras 4.2 y 4.4</b> (línea morada). Con T<sub>reac</sub> = 1 s, el valor de la Tabla 3.1, no las reproduce. Cambiar la velocidad máxima (probé 5, 6 y 8) solo mueve la meseta de baja densidad y no cambia nada para ρ ≥ 0.27.</p></section>
+<section><h2>Figura 4.2: velocidad terminal contra densidad</h2>
+<div class="leyenda"><span><i style="background:var(--sim)"></i>Simulación</span><span><i style="background:var(--t03)"></i>Simulación con T<sub>reac</sub> = 0.3 s</span><span><i style="background:var(--tesis)"></i>Tesis (leído)</span></div>
+<div class="fig"><canvas id="cV"></canvas></div>
+<p class="muted">Hasta ρ ≈ 0.33 coinciden. A partir de ahí la simulación cae mucho más rápido: a ρ = 0.87 da 1.7 m/s y la tesis 4.1 m/s.</p></section>
+<section><h2>Figura 4.4: flujo terminal contra densidad</h2>
+<div class="leyenda"><span><i style="background:var(--sim)"></i>Simulación</span><span><i style="background:var(--t03)"></i>Simulación con T<sub>reac</sub> = 0.3 s</span><span><i style="background:var(--tesis)"></i>Tesis (leído)</span></div>
+<div class="fig"><canvas id="cQ"></canvas></div>
+<p class="muted">El máximo de la simulación es 0.51 autos/s; el de la tesis es 0.79 autos/s, en el mismo rango de densidad. En ρ = 1 la simulación da 0.13 y la tesis 0.37.</p></section>
+<section><h2>Tabla</h2><div class="tabla"><table><tr><th>ρ</th><th>v sim (m/s)</th><th>Q sim (autos/s)</th></tr>
+<tr><td>0.0667</td><td>48.99</td><td>0.20</td></tr><tr><td>0.1333</td><td>48.99</td><td>0.24</td></tr><tr><td>0.2</td><td>48.99</td><td>0.45</td></tr><tr><td>0.2667</td><td>41.58</td><td>0.50</td></tr><tr><td>0.3333</td><td>33.34</td><td>0.51</td></tr><tr><td>0.4</td><td>27.24</td><td>0.51</td></tr><tr><td>0.4667</td><td>22.45</td><td>0.48</td></tr><tr><td>0.5333</td><td>18.55</td><td>0.45</td></tr><tr><td>0.6</td><td>15.29</td><td>0.42</td></tr><tr><td>0.6667</td><td>12.51</td><td>0.38</td></tr><tr><td>0.7333</td><td>10.09</td><td>0.34</td></tr><tr><td>0.8</td><td>7.96</td><td>0.29</td></tr><tr><td>0.8667</td><td>6.06</td><td>0.24</td></tr><tr><td>0.9333</td><td>4.35</td><td>0.19</td></tr><tr><td>1.0</td><td>2.80</td><td>0.13</td></tr>
+</table></div></section>
+</main>
+<script>const D3={v:[14.0, 14.0, 14.0, 14.0, 14.0, 12.3, 10.6, 9.2, 8.0, 7.0, 6.0, 5.1, 4.2, 3.3, 2.3],q:[0.2, 0.26, 0.45, 0.6, 0.75, 0.79, 0.79, 0.79, 0.77, 0.74, 0.7, 0.65, 0.58, 0.49, 0.37]};const D={"rho": [0.0667, 0.1333, 0.2, 0.2667, 0.3333, 0.4, 0.4667, 0.5333, 0.6, 0.6667, 0.7333, 0.8, 0.8667, 0.9333, 1.0], "v": [13.998, 13.996, 13.997, 11.879, 9.526, 7.782, 6.414, 5.3, 4.369, 3.574, 2.883, 2.274, 1.731, 1.243, 0.799], "q": [0.2, 0.24, 0.454, 0.502, 0.508, 0.506, 0.476, 0.448, 0.424, 0.38, 0.338, 0.292, 0.24, 0.186, 0.128]};const TV=[[0.0667, 14], [0.2, 14], [0.3333, 14], [0.4, 12.2], [0.4667, 10.6], [0.5333, 9.3], [0.6, 8.0], [0.6667, 6.9], [0.7333, 5.9], [0.8, 5.0], [0.8667, 4.1], [0.9333, 3.2], [1.0, 2.3]];const TQ=[[0.0667, 0.195], [0.1333, 0.31], [0.2, 0.47], [0.2667, 0.575], [0.3333, 0.745], [0.4, 0.783], [0.4667, 0.787], [0.5333, 0.786], [0.6, 0.772], [0.6667, 0.742], [0.7333, 0.698], [0.8, 0.645], [0.8667, 0.575], [0.9333, 0.485], [1.0, 0.372]];</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function ch(id,y,yl,tes,mult){
+  const sim=D.rho.map((r,i)=>({x:r,y:D[y][i]*mult}));
+  return new Chart(document.getElementById(id),{type:'line',data:{datasets:[
+    {data:sim,borderColor:css('--sim'),backgroundColor:css('--sim'),borderWidth:2.5,pointRadius:2},
+    {data:D.rho.map((r,i)=>({x:r,y:D3[y][i]*(y==='v'?1:1)})),borderColor:css('--t03'),backgroundColor:css('--t03'),borderWidth:2.5,borderDash:[6,4],pointRadius:2},
+    {data:tes.map(([x,v])=>({x,y:v})),showLine:false,pointStyle:'circle',pointRadius:5,backgroundColor:css('--tesis'),borderColor:css('--tesis')}]},
+  options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},
+    scales:{x:{type:'linear',min:0,max:1,title:{display:true,text:'densidad ρ',color:css('--muted')},ticks:{color:css('--muted')},grid:{color:css('--line')}},
+             y:{min:0,title:{display:true,text:yl,color:css('--muted')},ticks:{color:css('--muted')},grid:{color:css('--line')}}}}});
+}
+ch('cV','v','v terminal (m/s)',TV,3.5);
+ch('cQ','q','Q terminal (autos/s)',TQ,1);
+</script>
