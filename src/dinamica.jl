@@ -78,11 +78,11 @@ end
 """
 velocidad del siguiente paso con el IDM (actualización balística v + a δt, sin velocidades
 negativas: un auto frenando se detiene, no se echa en reversa).
-La separación mínima en reposo del IDM es d_0 + colchon, la misma que usa la distancia segura
-del modelo original con v = 0.
+La separación mínima en reposo es `p.idm_s0` (no d_0 + colchon: ver el comentario en `Parametros`).
+`d_0` se recibe solo para tener la misma firma que las otras reglas de velocidad.
 """
 function velocidad_idm(p::Parametros, d_0, v_1, v_lider, sep, libre)
-    a = aceleracion_idm(p, d_0 + p.colchon, v_1, v_lider, sep, libre)
+    a = aceleracion_idm(p, p.idm_s0, v_1, v_lider, sep, libre)
     return max(0.0, v_1 + a*p.δt)
 end
 

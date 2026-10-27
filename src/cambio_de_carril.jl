@@ -198,6 +198,13 @@ function correccion_angulo!(a::Vehiculo, θ, xb, c, p::Parametros)
     return θ
 end
 
+"""
+true si el auto k está cambiando de carril o ya decidió hacerlo en este paso.
+`est.θ[k]` es el ángulo de giro asignado: vale 0 cuando el auto va derecho y deja de ser 0 en
+cuanto el auto decide cambiar, aunque `est.giro[k]` todavía no se haya actualizado.
+"""
+cambiando(est::Estado, k) = est.giro[k] || est.θ[k] != 0
+
 frontera(p::Parametros, o, t) = fin_carril(p, min(o, t))
 centro_destino(p::Parametros, o, t) = t > o ? frontera(p, o, t) + p.ancho_carril/2 : frontera(p, o, t) - p.ancho_carril/2
 
@@ -217,6 +224,12 @@ function decide_cambiar_general(est::Estado, i, θ1, o, t)
     end
     k = lider(est, i, cur)
     k != 0 && est.giro[k] && return false
+    # corrección experimental: `giro[k]` se actualiza ANTES de que el auto k se mueva, así que un auto
+    # que decidió cambiar en este mismo paso todavía aparece como "no girando". Por eso con un carril
+    # lleno y el vecino vacío TODOS los autos del carril empiezan a cambiar en el mismo paso (y con 3
+    # carriles los de los dos lados se meten al carril de en medio a la vez y se traban).
+    # `cambiando` también cuenta a los autos que ya tienen un ángulo de giro asignado.
+    p.no_cambiar_tras_auto_girando && k != 0 && cambiando(est, k) && return false
     idx, ys, ls, vs = est.buf_idx, est.buf_y, est.buf_l, est.buf_v
     # separación con el de enfrente en el carril actual (el auto contra los fantasmas)
     lista_carril!(idx, ys, ls, vs, est, cur)
@@ -231,7 +244,7 @@ function decide_cambiar_general(est::Estado, i, θ1, o, t)
         # corrección experimental: si el auto de enfrente en el carril destino está a medio cambio
         # de carril (entrando o saliendo), no se empieza el cambio. Es el patrón que origina los
         # choques graves con 3 y 4 carriles: dos autos cambiando juntos y el de enfrente se detiene.
-        p.no_cambiar_tras_auto_girando && est.giro[idx[it]] && return false
+        p.no_cambiar_tras_auto_girando && cambiando(est, idx[it]) && return false
         sep_t = separacion_dos_autos(y2, 0.0, ys[it], ls[it], L; con_signo = cs)
         vprom_t = sum(vs)/M
     else

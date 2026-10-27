@@ -60,6 +60,10 @@ Base.@kwdef struct Parametros
     idm_b::Float64 = 0.6       # frenado cómodo: 0.6 u/s² ≈ 2.1 m/s²
     idm_b_max::Float64 = 2.5   # frenado de emergencia (tope físico): 2.5 u/s² ≈ 8.75 m/s² (≈ 0.9 g)
     idm_δ::Float64 = 4.0       # exponente de aceleración del IDM (valor estándar de la literatura)
+    # separación mínima en reposo del IDM: 0.3 u ≈ 1.05 m. Debe ser MENOR que la separación inicial de
+    # los autos (d_0 = 0.5): si fuera mayor, un carril lleno arrancaría con todos los huecos por debajo
+    # del mínimo y nadie se movería nunca (el IDM solo acelera si el hueco es mayor que s0).
+    idm_s0::Float64 = 0.3
 end
 
 numero_carriles(p::Parametros) = length(p.d_0)
