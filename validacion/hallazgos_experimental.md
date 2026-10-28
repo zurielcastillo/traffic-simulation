@@ -154,11 +154,11 @@ de largo cero encimado con un auto real que lo tapaba para el de atrás (detalle
 
 | Caso (velocidad terminal, m/s) | Original | Revisado |
 |---|---|---|
-| 2 carriles, ρ = 0.47, ε = 0 → 0.79 | 6.4 → 6.4 | 6.4 → 3.0 |
+| 2 carriles, ρ = 7/15 ≈ 0.467, ε = 0 → 0.79 | 6.4 → 6.4 | 6.4 → 3.0 |
 | 2 carriles, ρ = 0.53, ε = 0 → 1 | 5.3 → 3.6 | 5.3 → 3.8 |
 | 2 carriles, ρ = 0.87, ε = 0 → 1 | 1.7 → 1.3 | 1.7 → 1.6 |
-| 3 carriles, ρ = 0.53, ε = 0 → 1 | 5.2 → 1.6 (con choques) | 5.3 → 2.4 |
-| 4 carriles, ρ = 0.53, ε = 0 → 1 | 5.3 → 1.8 (con choques) | 5.3 → 0.9 |
+| 3 carriles, ρ = 0.53, ε = 0 → 1 | 5.3 → 1.5 (con choques) | 5.3 → 2.4 |
+| 4 carriles, ρ = 0.53, ε = 0 → 1 | 5.3 → 1.7 (con choques) | 5.3 → 0.9 |
 
 Pendiente con 3 y 4 carriles: a baja densidad algunos carriles casi no se usan, porque todos los
 autos arrancan en el carril 1, y la corrida de 4 carriles con ρ = 0.73 y ε = 0 se atora (0.3 m/s).
