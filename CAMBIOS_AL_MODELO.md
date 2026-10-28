@@ -94,3 +94,17 @@ pensada para él, como MOBIL (Kesting, Treiber y Helbing, 2007), cuyo factor de 
 - `presentacion/presentacion_modelo_nuevo.html`: los pasos de la tesis, modelo original contra
   modelo revisado.
 - `validacion/hallazgos_experimental.md`: tablas de cada etapa de las pruebas.
+
+## Trabajo futuro: perturbaciones
+
+Con el modelo revisado, el tráfico en el anillo llega a un estado estable en el que nadie vuelve a
+cambiarse de carril (ver `validacion/hallazgos_experimental.md`, secciones 7 y 8). El egoísmo solo
+pesa mientras los autos se redistribuyen después de un arranque desbalanceado. Para estudiar su
+efecto en régimen hace falta algo que siga perturbando el tráfico:
+
+- **Entradas y salidas, como en una avenida.** Autos nuevos que entran por un carril y autos que
+  salen, en lugar del anillo cerrado. Cada entrada crea un desbalance local que obliga a cambiarse
+  de carril.
+- **Frenadas al azar.** Una pequeña probabilidad de frenar sin motivo, como en el modelo de
+  Nagel-Schreckenberg, para que aparezcan embotellamientos fantasma.
+- **Conductores distintos.** Repartir v_max y el tiempo de reacción entre los autos.
