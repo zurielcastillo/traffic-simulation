@@ -64,6 +64,14 @@ Base.@kwdef struct Parametros
     # los autos (d_0 = 0.5): si fuera mayor, un carril lleno arrancaría con todos los huecos por debajo
     # del mínimo y nadie se movería nunca (el IDM solo acelera si el hueco es mayor que s0).
     idm_s0::Float64 = 0.3
+
+    # Tiempo de reacción para notar un cambio de carril (solo con `no_cambiar_tras_auto_girando`).
+    # Con 0 el auto de atrás se entera al instante de que el de enfrente decidió cambiar. Con t > 0
+    # solo lo nota cuando el otro ya lleva t segundos cambiando, como un conductor que tarda en ver
+    # la direccional y el movimiento del auto de enfrente. Durante ese tiempo puede empezar su propio
+    # cambio, así que se vuelven posibles los cambios "en cadena" pero espaciados, no todos en el mismo
+    # paso como en el original. El valor natural es el tiempo de reacción del modelo, T_reac = 1 s.
+    t_aviso_giro::Float64 = 0.0
 end
 
 numero_carriles(p::Parametros) = length(p.d_0)
@@ -120,6 +128,9 @@ mutable struct Estado
     f_largo::Matrix{Float64}
     f_vy::Matrix{Float64}
     t::Int
+    # paso en que cada auto decidió su último cambio de carril (para `t_aviso_giro`);
+    # vale typemin(Int) si nunca ha decidido uno
+    t_decision::Vector{Int}
     # buffers reutilizables para la predicción del carril destino
     buf_idx::Vector{Int}
     buf_y::Vector{Float64}

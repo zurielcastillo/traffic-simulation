@@ -1,0 +1,432 @@
+<meta charset="utf-8">
+<title>Dos carriles: original contra correcciones</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: una sola columna de lectura (~68ch); cada figura es un panel con su selector arriba y su lectura abajo. */
+:root{
+  --bg:#f5f6f8; --panel:#ffffff; --fg:#1c2230; --muted:#5d6676; --line:#dde1e8; --grid:#eceef2;
+  --m-orig:#5b6b86;   /* modelo original: gris azulado, como el asfalto */
+  --m-col:#0f8a7e;    /* solo colisiones: verde azulado */
+  --m-idm:#c27a12;    /* colisiones + IDM: ámbar de señal */
+  --m-reac:#a23b72;   /* colisiones + tiempo de reacción: magenta */
+  --bad:#c2410c;
+  --asfalto:#2b313b; --raya:#e8e3c8;            /* la pista se ve igual en ambos temas */
+  --a-frena:#e5483a; --a-neutro:#c9ced8; --a-acel:#3fbf7f;
+  --f-display:"Newsreader", Georgia, "Times New Roman", serif;
+  --f-body:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-data:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12151b; --panel:#1a1f27; --fg:#e6e9ef; --muted:#9aa3b2; --line:#2c333f; --grid:#232a34;
+  --m-orig:#93a3c0; --m-col:#3cc4b4; --m-idm:#e9a53e; --m-reac:#e07ab0; --bad:#f08a5d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12151b; --panel:#1a1f27; --fg:#e6e9ef; --muted:#9aa3b2; --line:#2c333f; --grid:#232a34;
+  --m-orig:#93a3c0; --m-col:#3cc4b4; --m-idm:#e9a53e; --m-reac:#e07ab0; --bad:#f08a5d; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--f-body)}
+.wrap{max-width:860px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:28px}
+h1,h2{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:2.1rem}
+h2{font-size:1.4rem}
+p{margin:0;max-width:68ch}
+.lead{color:var(--muted);font-size:1.02rem}
+.eyebrow{font:500 .72rem/1 var(--f-data);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+header{display:flex;flex-direction:column;gap:10px}
+section{display:flex;flex-direction:column;gap:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.leyenda{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.88rem}
+.leyenda span{display:inline-flex;align-items:center;gap:7px}
+.leyenda i{width:18px;height:3px;border-radius:2px;display:inline-block}
+.controles{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.88rem;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{font:500 .85rem var(--f-data);background:transparent;color:var(--fg);border:0;padding:6px 11px;cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.seg button:focus-visible{outline:2px solid var(--m-col);outline-offset:-2px}
+.dos{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.dos>*{min-width:0}
+svg{display:block;width:100%;height:auto}
+svg text{fill:var(--muted);font:11px var(--f-data)}
+.nota{font-size:.9rem;color:var(--muted)}
+.hallazgo{border-left:3px solid var(--m-col);padding:4px 0 4px 14px}
+.tabla{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--muted);font-size:.8rem}
+td.num{font-family:var(--f-data)}
+.chip{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle}
+.reloj{font:500 .85rem var(--f-data);color:var(--fg);margin-left:auto;font-variant-numeric:tabular-nums}
+.escala{display:flex;align-items:center;gap:10px;font-size:.8rem;color:var(--muted);flex-wrap:wrap}
+.escala i{flex:0 1 220px;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--a-frena),var(--a-neutro),var(--a-acel))}
+.pistas{display:flex;flex-direction:column;gap:14px}
+.pista{display:flex;flex-direction:column;gap:6px}
+.pista .cab{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px;font-size:.85rem}
+.pista .cab b{font-weight:600}
+.pista .cab span{font-family:var(--f-data);color:var(--muted);font-variant-numeric:tabular-nums}
+.pista canvas{width:100%;display:block;border-radius:6px;background:var(--asfalto)}
+code{font:.86em var(--f-data);background:var(--grid);padding:1px 5px;border-radius:4px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Tesis · simulación de tráfico · 2 carriles</div>
+  <h1>Dos carriles: cómo cambian los resultados con las correcciones</h1>
+  <p class="lead">Mismo barrido que la tesis (100 autos, 1000 s, promedios de 500 a 1000 s) corrido con tres versiones del modelo. Rama <code>experimental_colisiones_idm</code>.</p>
+  <div class="leyenda" id="leyenda"></div>
+</header>
+
+<section>
+  <div class="panel">
+    <p class="hallazgo"><strong>Lo principal.</strong> Con cooperación total (ε = 0) las correcciones de colisiones no cambian nada: las curvas del original y de “solo colisiones” quedan una encima de otra. Lo que sí cambia es el efecto del egoísmo: en el original la velocidad cae para ε alto en densidad media, y con las correcciones esa caída desaparece. El IDM sube la velocidad y el flujo en densidades medias.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Cómo frenan y aceleran</h2>
+  <p class="nota">Los tres modelos en el mismo caso: ρ = 0.53 y ε = 0.89, la densidad donde el egoísmo más pesaba en el original. El anillo se dibuja cortado en dos tramos; un auto que sale por la derecha del tramo de arriba entra por la izquierda del de abajo. Cada auto se pinta según su aceleración en ese momento.</p>
+  <div class="panel">
+    <div class="controles">
+      <div class="seg" id="sel-ventana"><button type="button" data-v="arranque" aria-pressed="true">Arranque · 0 a 60 s</button><button type="button" data-v="regimen" aria-pressed="false">Régimen · 500 a 560 s</button></div>
+      <div class="seg" id="sel-vel"><button type="button" data-v="1" aria-pressed="false">×1</button><button type="button" data-v="3" aria-pressed="true">×3</button><button type="button" data-v="8" aria-pressed="false">×8</button></div>
+      <div class="seg"><button type="button" id="b-pausa" aria-pressed="false">Pausar</button></div>
+      <span class="reloj" id="reloj">t = 0.0 s</span>
+    </div>
+    <div class="escala"><span>frena 3 m/s² o más</span><i></i><span>acelera 3 m/s² o más</span></div>
+    <div class="pistas" id="pistas"></div>
+    <p class="nota">En el arranque se ve la diferencia más grande. En el original los autos pasan de detenidos a 14 m/s en un par de segundos, con aceleraciones de hasta 140 m/s² (unas 14 g) y frenadas igual de bruscas. Con el IDM aceleran a 1 m/s² como máximo, como un auto de calle, y el frenado más fuerte es de 8.8 m/s². “Solo colisiones” arranca igual de brusco que el original, porque usa su misma regla de velocidad. En el régimen, el original sigue con frenadas de hasta 70 m/s² por los cambios de carril en cadena. “Solo colisiones” queda en un flujo parejo sin frenadas, y el IDM frena como máximo 1.3 m/s².</p>
+  </div>
+</section>
+
+<section>
+  <h2>Velocidad y flujo contra densidad</h2>
+  <p class="nota">Equivalente a las figuras de velocidad y flujo terminal de la tesis. Elige el nivel de egoísmo.</p>
+  <div class="panel">
+    <div class="controles">Egoísmo ε <div class="seg" id="sel-eps"></div></div>
+    <div class="dos">
+      <div><div class="eyebrow">Velocidad terminal (m/s)</div><svg id="g-v" viewBox="0 0 400 260" role="img" aria-label="Velocidad terminal contra densidad"></svg></div>
+      <div><div class="eyebrow">Flujo terminal (autos/s)</div><svg id="g-q" viewBox="0 0 400 260" role="img" aria-label="Flujo terminal contra densidad"></svg></div>
+    </div>
+    <p class="nota" id="nota-eps"></p>
+  </div>
+</section>
+
+<section>
+  <h2>Egoísmo contra cooperación</h2>
+  <p class="nota">Barrido fino de ε de 0 a 1 en pasos de 0.05, a una densidad fija. Es la comparación donde más se nota el cambio.</p>
+  <div class="panel">
+    <div class="controles">Densidad ρ <div class="seg" id="sel-rho"></div></div>
+    <div class="dos">
+      <div><div class="eyebrow">Velocidad terminal (m/s)</div><svg id="g-ev" viewBox="0 0 400 260" role="img" aria-label="Velocidad terminal contra egoísmo"></svg></div>
+      <div><div class="eyebrow">Flujo terminal (autos/s)</div><svg id="g-eq" viewBox="0 0 400 260" role="img" aria-label="Flujo terminal contra egoísmo"></svg></div>
+    </div>
+    <p class="nota">Con 2 carriles, la caída del original viene de una sola cosa. Varios autos seguidos empezaban a cambiar de carril en el mismo paso, porque el programa marcaba tarde que el de enfrente ya estaba cambiando. Al corregir solo eso (<code>no_cambiar_tras_auto_girando</code>), la velocidad en ρ = 0.53 y ε = 0.89 pasa de 3.7 a 5.3 m/s. Las otras tres correcciones, por separado, no la mueven.</p>
+  </div>
+</section>
+
+<section>
+  <h2>¿Y si el conductor tarda en notar el cambio del de enfrente?</h2>
+  <p class="nota">Prueba con un tiempo de reacción de 1 s para notar que el auto de enfrente empezó a cambiar de carril (<code>t_aviso_giro = 1.0</code>). Todo lo demás es igual que en “solo colisiones”. Con 0.5 s los resultados son casi idénticos.</p>
+  <div class="panel">
+    <div class="leyenda" id="leyenda-r"></div>
+    <div class="controles">Densidad ρ <div class="seg" id="sel-rrho"></div></div>
+    <div class="dos">
+      <div><div class="eyebrow">Velocidad terminal contra egoísmo (m/s)</div><svg id="g-rv" viewBox="0 0 400 260" role="img" aria-label="Velocidad terminal contra egoísmo con tiempo de reacción"></svg></div>
+      <div><div class="eyebrow">Cambios de carril en 1000 s, contra egoísmo</div><svg id="g-rc" viewBox="0 0 400 260" role="img" aria-label="Cambios de carril contra egoísmo con tiempo de reacción"></svg></div>
+    </div>
+    <p class="hallazgo"><strong>El efecto del egoísmo regresa, y más fuerte que en el original.</strong> En ρ = 0.53 la velocidad empieza a caer en ε ≈ 0.4 y desde ε ≈ 0.6 queda cerca de 1 m/s. En el original la caída empieza en ε ≈ 0.75 y solo llega a 3.6 m/s. Durante ese segundo de reacción varios autos seguidos alcanzan a empezar su cambio, y con más egoísmo se meten en huecos más chicos.</p>
+    <p class="nota">Pero aparece un problema nuevo con poca densidad. En ρ = 0.2 los autos hacen 4 400 cambios de carril y la velocidad baja de 14 a 7.8 m/s, sin importar ε. Es todo el pelotón cambiándose de un carril al otro y regresando: cada auto ve que el de enfrente se cambió, todavía no lo “nota” y se cambia también, y luego el carril que dejaron vacío tiene más espacio. La regla de cambio no tiene un umbral de ganancia (histéresis), así que nada detiene ese vaivén. Antes de usar el tiempo de reacción en la tesis hay que agregar ese umbral (como el de la regla MOBIL).</p>
+  </div>
+</section>
+
+<section>
+  <h2>Velocidad promedio en el tiempo</h2>
+  <p class="nota">Promedio móvil de 5 s, como la figura de velocidad contra tiempo de la tesis.</p>
+  <div class="panel">
+    <div class="controles">Densidad ρ <div class="seg" id="sel-srho"></div> Egoísmo ε <div class="seg" id="sel-seps"></div></div>
+    <svg id="g-s" viewBox="0 0 800 260" role="img" aria-label="Velocidad promedio contra tiempo"></svg>
+    <p class="nota">El IDM arranca más despacio porque acelera como máximo a 1 m/s². En el original un auto puede pasar de 0 a 14 m/s en pocos pasos de 0.1 s.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Choques y cambios de carril</h2>
+  <div class="panel">
+    <div class="tabla"><table id="t-res"></table></div>
+    <p class="nota">Un roce es cualquier traslape entre dos autos; un choque grave es un traslape de más de 0.25 unidades (unos 90 cm). 1 unidad = 3.5 m.</p>
+  </div>
+  <div class="panel">
+    <div class="eyebrow">Cambios de carril completados en 1000 s, ε = 0</div>
+    <svg id="g-c" viewBox="0 0 800 240" role="img" aria-label="Cambios de carril contra densidad"></svg>
+    <p class="nota">Hasta ρ ≈ 0.47 el original hace unos 150 cambios (264 en ρ = 0.13) y "solo colisiones" unos 50. La diferencia son los cambios en cadena que ya no se permiten. Con el IDM hay más cambios cuando casi no hay autos (275 en ρ = 0.07), y desde ρ = 0.2 queda igual que "solo colisiones".</p>
+  </div>
+</section>
+
+<section>
+  <h2>Qué es cada modelo</h2>
+  <div class="panel">
+    <div class="tabla"><table>
+      <tr><th>Modelo</th><th style="text-align:left">Cambios respecto a la tesis</th></tr>
+      <tr><td><span class="chip" style="background:var(--m-orig)"></span>Original</td><td style="text-align:left;white-space:normal">Ninguno. Es el código de <code>version_estable</code>.</td></tr>
+      <tr><td><span class="chip" style="background:var(--m-col)"></span>Solo colisiones</td><td style="text-align:left;white-space:normal">Separación con signo (un auto encimado frena), no empezar un cambio si el de enfrente está cambiando, líder por fantasma y velocidad no negativa. Aceleración original.</td></tr>
+      <tr><td><span class="chip" style="background:var(--m-idm)"></span>Colisiones + IDM</td><td style="text-align:left;white-space:normal">Lo anterior más el Intelligent Driver Model: acelera hasta 1.05 m/s², frena cómodo a 2.1 m/s² y frena de emergencia hasta 8.75 m/s².</td></tr>
+    </table></div>
+    <p class="nota">Datos: <code>validacion/n_carriles/resultados.csv</code> (original) y <code>validacion/n_carriles/partes/</code> (correcciones). Detalle en <code>validacion/hallazgos_experimental.md</code>.</p>
+  </div>
+</section>
+</div>
+
+<script>
+const D = __DATA__;
+const MODELOS = [
+  {k:"original", n:"Original", c:"--m-orig"},
+  {k:"colisiones", n:"Solo colisiones", c:"--m-col"},
+  {k:"experimental", n:"Colisiones + IDM", c:"--m-idm"},
+];
+const NS = "http://www.w3.org/2000/svg";
+const $ = id => document.getElementById(id);
+const r2 = x => Math.round(x*100)/100;
+
+$("leyenda").innerHTML = MODELOS.map(m => `<span><i style="background:var(${m.c})"></i>${m.n}</span>`).join("");
+
+function el(tag, attrs, parent){ const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; }
+
+/* dibuja un plano con ejes y una línea por modelo; series = [{c, pts:[[x,y]], marcas:[bool]}] */
+function grafica(svg, series, {xmin, xmax, ymin = 0, ymax, xt, yt, xlab, W = 400, H = 260, puntos = true}){
+  svg.innerHTML = "";
+  const m = {l:42, r:12, t:10, b:38};
+  const X = x => m.l + (x - xmin)/(xmax - xmin)*(W - m.l - m.r);
+  const Y = y => H - m.b - (y - ymin)/(ymax - ymin)*(H - m.t - m.b);
+  for (const t of yt){
+    el("line", {x1:m.l, x2:W - m.r, y1:Y(t), y2:Y(t), stroke:"var(--grid)", "stroke-width":1}, svg);
+    el("text", {x:m.l - 6, y:Y(t) + 4, "text-anchor":"end"}, svg).textContent = t;
+  }
+  for (const t of xt){
+    el("text", {x:X(t), y:H - m.b + 16, "text-anchor":"middle"}, svg).textContent = t;
+  }
+  el("line", {x1:m.l, x2:W - m.r, y1:Y(ymin), y2:Y(ymin), stroke:"var(--line)", "stroke-width":1}, svg);
+  el("text", {x:(m.l + W - m.r)/2, y:H - 6, "text-anchor":"middle"}, svg).textContent = xlab;
+  for (const s of series){
+    if (!s.pts.length) continue;
+    const d = s.pts.map((p, i) => (i ? "L" : "M") + X(p[0]).toFixed(1) + "," + Y(Math.min(p[1], ymax)).toFixed(1)).join("");
+    el("path", {d, fill:"none", stroke:`var(${s.c})`, "stroke-width":2, "stroke-linejoin":"round"}, svg);
+    if (puntos) s.pts.forEach((p, i) => {
+      const choque = s.marcas && s.marcas[i];
+      const cir = el("circle", {cx:X(p[0]), cy:Y(Math.min(p[1], ymax)), r:choque ? 4.2 : 2.6,
+        fill:choque ? "var(--panel)" : `var(${s.c})`, stroke:`var(${s.c})`, "stroke-width":choque ? 2 : 0}, svg);
+      el("title", {}, cir).textContent = `${s.n}: x = ${r2(p[0])}, y = ${r2(p[1])}${choque ? " (hubo roce)" : ""}`;
+    });
+  }
+}
+
+/* filas de un modelo con densidad del barrido grueso (k/15) */
+const grueso = r => Math.abs(r*15 - Math.round(r*15)) < 0.01;
+function filas(m, f){ return D[m].filter(f); }
+
+function seg(id, valores, inicial, fmt, alCambiar){
+  const c = $(id); let actual = inicial;
+  c.innerHTML = valores.map(v => `<button type="button" data-v="${v}" aria-pressed="${v === inicial}">${fmt(v)}</button>`).join("");
+  c.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    actual = +b.dataset.v;
+    c.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    alCambiar(actual);
+  });
+  return () => actual;
+}
+
+/* 1) velocidad y flujo contra densidad */
+const EPS = [0, 0.37, 0.47, 0.63, 0.79, 0.89];
+function dibujaDensidad(eps){
+  const series = q => MODELOS.map(m => {
+    const fs = filas(m.k, x => grueso(x.r) && Math.abs(x.e - eps) < 1e-6).sort((a, b) => a.r - b.r);
+    return {c:m.c, n:m.n, pts:fs.map(x => [x.r, q ? x.q : x.v]), marcas:fs.map(x => x.pc > 0)};
+  });
+  const xt = [0, 0.2, 0.4, 0.6, 0.8, 1];
+  grafica($("g-v"), series(false), {xmin:0, xmax:1, ymax:15, xt, yt:[0, 5, 10, 15], xlab:"densidad ρ"});
+  grafica($("g-q"), series(true), {xmin:0, xmax:1, ymax:1.4, xt, yt:[0, 0.4, 0.8, 1.2], xlab:"densidad ρ"});
+  const v = m => (filas(m, x => Math.abs(x.r - 0.5333) < 1e-3 && Math.abs(x.e - eps) < 1e-6)[0] || {}).v;
+  $("nota-eps").textContent = `En ρ = 0.53 con ε = ${eps}: original ${r2(v("original"))} m/s, solo colisiones ${r2(v("colisiones"))} m/s, colisiones + IDM ${r2(v("experimental"))} m/s. Los puntos huecos son corridas con algún roce entre autos.`;
+}
+seg("sel-eps", EPS, 0.89, v => v.toFixed(2), dibujaDensidad);
+dibujaDensidad(0.89);
+
+/* 2) egoísmo contra cooperación a densidad fija (barrido fino) */
+const RHO_FINO = [0.2, 0.47, 0.53, 0.87];
+function dibujaEgoismo(rho){
+  const series = q => MODELOS.map(m => {
+    const fs = filas(m.k, x => Math.abs(x.r - rho) < 1e-6).sort((a, b) => a.e - b.e);
+    return {c:m.c, n:m.n, pts:fs.map(x => [x.e, q ? x.q : x.v]), marcas:fs.map(x => x.pc > 0)};
+  });
+  const xt = [0, 0.2, 0.4, 0.6, 0.8, 1];
+  const sv = series(false), sq = series(true);
+  const tope = (s, paso) => Math.ceil(Math.max(...s.flatMap(x => x.pts.map(p => p[1])))/paso)*paso;
+  const yv = tope(sv, 2), yq = tope(sq, 0.2);
+  const marcasV = []; for (let t = 0; t <= yv + 1e-9; t += yv > 8 ? 4 : 2) marcasV.push(r2(t));
+  const marcasQ = []; for (let t = 0; t <= yq + 1e-9; t += 0.2) marcasQ.push(r2(t));
+  grafica($("g-ev"), sv, {xmin:0, xmax:1, ymax:yv, xt, yt:marcasV, xlab:"egoísmo ε"});
+  grafica($("g-eq"), sq, {xmin:0, xmax:1, ymax:yq, xt, yt:marcasQ, xlab:"egoísmo ε"});
+}
+seg("sel-rho", RHO_FINO, 0.53, v => v.toFixed(2), dibujaEgoismo);
+dibujaEgoismo(0.53);
+
+/* 2b) prueba con tiempo de reacción para notar cambios de carril */
+(function(){
+  const MR = [
+    {k:"original", n:"Original", c:"--m-orig"},
+    {k:"colisiones", n:"Solo colisiones (nota al instante)", c:"--m-col"},
+    {k:"reaccion", n:"Colisiones + 1 s de reacción", c:"--m-reac"},
+  ];
+  $("leyenda-r").innerHTML = MR.map(m => `<span><i style="background:var(${m.c})"></i>${m.n}</span>`).join("");
+  function dibuja(rho){
+    const series = campo => MR.map(m => {
+      const fs = filas(m.k, x => Math.abs(x.r - rho) < 1e-6).sort((a, b) => a.e - b.e);
+      return {c:m.c, n:m.n, pts:fs.map(x => [x.e, x[campo]])};
+    });
+    const xt = [0, 0.2, 0.4, 0.6, 0.8, 1];
+    grafica($("g-rv"), series("v"), {xmin:0, xmax:1, ymax:15, xt, yt:[0, 5, 10, 15], xlab:"egoísmo ε"});
+    const sc = series("c"), top = Math.max(...sc.flatMap(s => s.pts.map(p => p[1])));
+    const paso = top > 2000 ? 1000 : top > 600 ? 200 : 100, ymax = Math.ceil(top/paso)*paso;
+    const yt = []; for (let t = 0; t <= ymax; t += paso) yt.push(t);
+    grafica($("g-rc"), sc, {xmin:0, xmax:1, ymax, xt, yt, xlab:"egoísmo ε"});
+  }
+  seg("sel-rrho", [0.2, 0.47, 0.53, 0.87], 0.53, v => v.toFixed(2), dibuja);
+  dibuja(0.53);
+})();
+
+/* 3) series de tiempo */
+let sRho = 0.53, sEps = 0.89;
+function dibujaSerie(){
+  const series = MODELOS.map(m => {
+    const f = filas(m.k, x => x.s && Math.abs(x.r - sRho) < 1e-6 && Math.abs(x.e - sEps) < 1e-6)[0];
+    return {c:m.c, n:m.n, pts:f ? f.s.map((v, i) => [i*5 + 2.5, v]) : []};
+  });
+  grafica($("g-s"), series, {xmin:0, xmax:1000, ymax:15, xt:[0, 200, 400, 600, 800, 1000], yt:[0, 5, 10, 15],
+    xlab:"tiempo (s) · velocidad promedio (m/s)", W:800, puntos:false});
+}
+seg("sel-srho", [0.47, 0.53, 0.87], 0.53, v => v.toFixed(2), v => { sRho = v; dibujaSerie(); });
+seg("sel-seps", [0, 0.47, 0.89], 0.89, v => v.toFixed(2), v => { sEps = v; dibujaSerie(); });
+dibujaSerie();
+
+/* 0) animación: tres pistas sincronizadas, autos pintados por aceleración */
+(function(){
+  const A = __ANIM__;
+  const N = A.N, L = A.L, CUADROS = 300, DT = 0.2;   // 0.2 s entre cuadros
+  const TRAMOS = 2, LT = L/TRAMOS;                   // el anillo se dibuja en dos tramos
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const dec = (s, T) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new T(u.buffer); };
+  // decodifica una ventana: x, ángulo y vy (Int16, 3 por auto) y posición y (Uint16)
+  const prep = w => ({a:dec(w.a, Int16Array), y:dec(w.y, Uint16Array), vm:w.vm, amax:w.amax, amin:w.amin});
+  const pistas = MODELOS.map(m => {
+    const div = document.createElement("div"); div.className = "pista";
+    div.innerHTML = `<div class="cab"><b><span class="chip" style="background:var(${m.c})"></span>${m.n}</b><span data-r></span></div><canvas></canvas>`;
+    $("pistas").appendChild(div);
+    return {m, cv:div.querySelector("canvas"), info:div.querySelector("[data-r]"),
+            arranque:prep(A[m.k].arranque), regimen:prep(A[m.k].regimen)};
+  });
+  let ventana = "arranque", vel = 3, pausado = false, f = 0;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) { pausado = true; f = 40; }
+
+  // color según aceleración (m/s²): rojo frenando, gris constante, verde acelerando; satura en ±3
+  function mezcla(c1, c2, t){
+    const h = c => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
+    const a = h(c1), b = h(c2);
+    return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v)*t)).join(",")})`;
+  }
+  let colores;
+  function leeColores(){ colores = {fr:css("--a-frena"), ne:css("--a-neutro"), ac:css("--a-acel"), as:css("--asfalto"), ra:css("--raya")}; }
+  leeColores();
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", leeColores);
+  const colorAcel = a => { const t = Math.max(-1, Math.min(1, a/3)); return t < 0 ? mezcla(colores.ne, colores.fr, -t) : mezcla(colores.ne, colores.ac, t); };
+
+  function dibuja(p){
+    const w = p[ventana], cv = p.cv, d = Math.min(2, devicePixelRatio || 1);
+    const W = cv.clientWidth || 600, carril = Math.max(9, Math.min(16, W/50)), hT = 2*carril, sep = 8;
+    const H = TRAMOS*hT + (TRAMOS - 1)*sep + 8;
+    if (cv.width !== Math.round(W*d) || cv.height !== Math.round(H*d)) { cv.width = Math.round(W*d); cv.height = Math.round(H*d); cv.style.height = H + "px"; }
+    const g = cv.getContext("2d"); g.setTransform(d, 0, 0, d, 0, 0);
+    g.fillStyle = colores.as; g.fillRect(0, 0, W, H);
+    const s = W/LT;   // pixeles por unidad a lo largo del camino
+    for (let k = 0; k < TRAMOS; k++){
+      const y0 = 4 + k*(hT + sep);
+      g.strokeStyle = colores.ra; g.globalAlpha = .55; g.setLineDash([10, 9]); g.lineWidth = 1;
+      g.beginPath(); g.moveTo(0, y0 + carril); g.lineTo(W, y0 + carril); g.stroke();
+      g.setLineDash([]); g.globalAlpha = .9;
+      g.beginPath(); g.moveTo(0, y0); g.lineTo(W, y0); g.moveTo(0, y0 + hT); g.lineTo(W, y0 + hT); g.stroke();
+      g.globalAlpha = 1;
+    }
+    const fa = f > 0 ? f - 1 : 0;
+    for (let i = 0; i < N; i++){
+      const o = (f*N + i)*3, oa = (fa*N + i)*3;
+      const x = w.a[o]/1000, ang = w.a[o + 1]/10000, vy = w.a[o + 2]/1000;
+      const acel = f > 0 ? (vy - w.a[oa + 2]/1000)/DT*3.5 : 0;   // u/s² → m/s²
+      const y = w.y[f*N + i]/50, k = Math.min(TRAMOS - 1, Math.floor(y/LT));
+      const px = (y - k*LT)*s, py = 4 + k*(hT + sep) + x*carril;
+      g.save(); g.translate(px, py);
+      g.rotate(Math.atan2(-Math.sin(ang)*carril, Math.cos(ang)*s));
+      g.fillStyle = colorAcel(acel);
+      const lx = 9/7*s, ly = 18/35*carril;
+      g.fillRect(-lx/2, -ly/2, lx, ly);
+      g.restore();
+    }
+    p.info.textContent = `v promedio ${w.vm[f].toFixed(1)} m/s · acel. máx ${w.amax} m/s² · frenado máx ${Math.abs(w.amin)} m/s²`;
+  }
+  function todo(){
+    pistas.forEach(dibuja);
+    const t0 = ventana === "arranque" ? 0 : 500;
+    $("reloj").textContent = `t = ${(t0 + f*DT).toFixed(1)} s`;
+  }
+  // los selectores de esta sección usan data-v con texto, así que se manejan aparte de `seg`
+  function grupo(id, alCambiar){
+    $(id).addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      $(id).querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+      alCambiar(b.dataset.v);
+    });
+  }
+  grupo("sel-ventana", v => { ventana = v; f = 0; todo(); });
+  grupo("sel-vel", v => { vel = +v; });
+  const bp = $("b-pausa");
+  const etiqueta = () => { bp.textContent = pausado ? "Reproducir" : "Pausar"; bp.setAttribute("aria-pressed", pausado); };
+  bp.addEventListener("click", () => { pausado = !pausado; etiqueta(); });
+  etiqueta();
+  let acum = 0, tAnt = performance.now();
+  function ciclo(t){
+    requestAnimationFrame(ciclo);
+    const dt = Math.min(.1, Math.max(0, (t - tAnt)/1000)); tAnt = t;
+    if (!pausado){
+      acum += dt*vel/DT;          // cuadros de simulación que tocan en este tiempo real
+      const paso = Math.floor(acum); acum -= paso;
+      if (paso > 0){ f = (f + paso) % CUADROS; }
+    }
+    try { todo(); } catch (e) { console.error(e); }
+  }
+  todo();
+  requestAnimationFrame(ciclo);
+  addEventListener("resize", todo);
+})();
+
+/* 4) tabla de choques y gráfica de cambios de carril */
+(function(){
+  let h = `<tr><th>Modelo</th><th>Corridas</th><th>Con roce</th><th>Choque grave</th><th>Traslape máx. (m)</th><th>Flujo máx. ε = 0 (autos/s)</th></tr>`;
+  for (const m of MODELOS){
+    const fs = D[m.k];
+    const roce = fs.filter(x => x.pc > 0).length, grave = fs.filter(x => x.pm > 0.25).length;
+    const pm = Math.max(...fs.map(x => x.pm));
+    const qmax = Math.max(...fs.filter(x => x.e === 0 && grueso(x.r)).map(x => x.q));
+    h += `<tr><td><span class="chip" style="background:var(${m.c})"></span>${m.n}</td><td class="num">${fs.length}</td>
+      <td class="num">${roce} (${Math.round(100*roce/fs.length)} %)</td><td class="num">${grave}</td>
+      <td class="num">${(pm*3.5).toFixed(2)}</td><td class="num">${qmax.toFixed(2)}</td></tr>`;
+  }
+  $("t-res").innerHTML = h;
+  const series = MODELOS.map(m => {
+    const fs = filas(m.k, x => grueso(x.r) && x.e === 0).sort((a, b) => a.r - b.r);
+    return {c:m.c, n:m.n, pts:fs.map(x => [x.r, x.c])};
+  });
+  grafica($("g-c"), series, {xmin:0, xmax:1, ymax:300, xt:[0, 0.2, 0.4, 0.6, 0.8, 1], yt:[0, 100, 200, 300],
+    xlab:"densidad ρ", W:800, H:240});
+})();
+</script>

@@ -4,7 +4,11 @@
 #            colisiones    solo las correcciones de colisiones (separación con signo, no cambiar detrás de
 #                          un auto que gira, líder por fantasma, velocidad no negativa), aceleración original
 #            experimental  las correcciones de colisiones más la aceleración IDM
-#   limite = corre solo los primeros `limite` trabajos (para pruebas rápidas)
+#            reaccion      como colisiones, pero el auto de atrás tarda T_reac (1 s) en notar que el de
+#                          enfrente empezó a cambiar de carril (`t_aviso_giro`)
+#            reaccion05    igual, con 0.5 s
+#   limite = corre solo los primeros `limite` trabajos (para pruebas rápidas); 0 = todos
+#   carriles = corre solo ese número de carriles, p. ej. 2 (opcional, 6.º argumento)
 push!(LOAD_PATH, joinpath(@__DIR__, "..", "..", "src"))
 using TraficoOpt
 const TO = TraficoOpt
@@ -16,7 +20,9 @@ function parametros(; kw...)
     MODELO == "original" && return Parametros(; kw...)
     MODELO == "colisiones" && return parametros_experimentales(; modelo_aceleracion = :original, kw...)
     MODELO == "experimental" && return parametros_experimentales(; kw...)
-    error("modelo desconocido: $MODELO (usar original, colisiones o experimental)")
+    MODELO == "reaccion" && return parametros_experimentales(; modelo_aceleracion = :original, t_aviso_giro = 1.0, kw...)
+    MODELO == "reaccion05" && return parametros_experimentales(; modelo_aceleracion = :original, t_aviso_giro = 0.5, kw...)
+    error("modelo desconocido: $MODELO (usar original, colisiones, experimental, reaccion o reaccion05)")
 end
 
 """ llena los carriles en orden (como generar_distribucion_automatica, generalizado a nc carriles) """
@@ -109,7 +115,8 @@ end
 for nc in (3, 4, 2), ρ in (0.47, 0.53, 0.87), ε in (0.47, 0.89)
     push!(jobs, (nc, ρ, ε, false))
 end
-length(ARGS) > 4 && (jobs = jobs[1:parse(Int, ARGS[5])])
+length(ARGS) > 5 && (jobs = filter(j -> j[1] == parse(Int, ARGS[6]), jobs))
+length(ARGS) > 4 && parse(Int, ARGS[5]) > 0 && (jobs = jobs[1:parse(Int, ARGS[5])])
 open(out, "w") do io
     for (j, job) in enumerate(jobs)
         (j - 1) % nw == worker || continue

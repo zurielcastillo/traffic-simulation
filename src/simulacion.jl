@@ -22,7 +22,7 @@ function crear_estado(p::Parametros, n_por_carril::Vector{Int}, separaciones::Ve
     N = length(vehs)
     est = Estado(p, nc, vehs, falses(N), zeros(N), zeros(Int, N), zeros(Int, N),
                  indices_alternados(n_por_carril), zeros(Int, N), zeros(Int, N),
-                 zeros(Int, 2, N), zeros(2, N), zeros(2, N), zeros(2, N), 0,
+                 zeros(Int, 2, N), zeros(2, N), zeros(2, N), zeros(2, N), 0, fill(typemin(Int), N),
                  Int[], Float64[], Float64[], Float64[])
     for k in 1:N
         a = vehs[k]
@@ -97,6 +97,7 @@ function paso_auto!(est::Estado, i)
             if decide_cambiar_general(est, i, pre, o, t)
                 est.θ[i] = pre
                 est.destino[i] = t
+                est.t_decision[i] = est.t   # para saber desde cuándo los demás lo pueden notar
                 break
             end
         end
