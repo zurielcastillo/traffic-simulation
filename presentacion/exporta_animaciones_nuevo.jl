@@ -10,7 +10,7 @@ const CADA = 2; const FR = 600
 """ parámetros del modelo nuevo (el mismo que `filtros_reac` en validacion/n_carriles/corre_n.jl) """
 modelo_nuevo(; kw...) = parametros_experimentales(; modelo_aceleracion = :original, t_aviso_giro = 1.0,
                                                    fraccion_necesidad = 0.95, umbral_ganancia = largo,
-                                                   tiempo_entre_cambios = 5.0, kw...)
+                                                   tiempo_entre_cambios = 5.0, fantasma_solo_si_ocupa = true, mirar_dos_adelante = true, kw...)
 
 function distrib(L)
     e = largo + d0; mx = floor(Int, L/e)

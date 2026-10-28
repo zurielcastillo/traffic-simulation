@@ -64,7 +64,25 @@ function paso_auto!(est::Estado, i)
         # regla de velocidad lo detiene (en el original, abs(sep) lo dejaba seguir avanzando)
         sep = separacion_dos_autos(est.f_y[s, i], est.f_largo[s, i], est.f_y[sk, k], est.f_largo[sk, k], L;
                                    mismo, con_signo = p.separacion_con_signo)
-        v = velocidad_fantasma(p, p.d_0[ℓ], est.f_vy[s, i], est.f_largo[s, i], est.f_vy[sk, k], sep, mismo)
+        v_lider = est.f_vy[sk, k]
+        # corrección experimental: también se mira al auto de enfrente del líder. Si el líder es un
+        # fantasma de largo cero (la esquina de un auto que entra o sale del carril) que quedó encima
+        # de otro auto, el auto real está "detrás" del fantasma en el orden del carril y el de atrás
+        # no lo veía. Se toma el más cercano de los dos (por su defensa trasera).
+        if p.mirar_dos_adelante && !mismo
+            k2 = lider(est, k, ℓ)
+            if k2 != 0 && k2 != i && k2 != k
+                sk2 = ranura(est, k2, ℓ)
+                sep2 = separacion_dos_autos(est.f_y[s, i], est.f_largo[s, i], est.f_y[sk2, k2], est.f_largo[sk2, k2], L;
+                                            con_signo = p.separacion_con_signo)
+                # abs(sep2) < L/2 descarta el caso en que el segundo líder está "del otro lado" del
+                # anillo (con muy pocos autos en el carril), donde la separación no tiene sentido
+                if sep2 < sep && abs(sep2) < L/2
+                    sep = sep2; v_lider = est.f_vy[sk2, k2]
+                end
+            end
+        end
+        v = velocidad_fantasma(p, p.d_0[ℓ], est.f_vy[s, i], est.f_largo[s, i], v_lider, sep, mismo)
         vf = s == 1 ? (v, vf[2]) : (vf[1], v)
     end
 

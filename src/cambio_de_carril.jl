@@ -2,10 +2,23 @@
 # Autos fantasma, líderes y decisión de cambio de carril (n carriles)
 # ---------------------------------------------------------------------------
 
-""" el auto k cuenta en el carril ℓ: si gira, en su carril origen y destino; si no, en los que toca """
+"""
+el auto k cuenta en el carril ℓ: si gira, en su carril origen y destino; si no, en los que toca.
+
+Con `fantasma_solo_si_ocupa` (corrección experimental), un auto que gira deja de contar en su
+carril de ORIGEN en cuanto ya no lo toca físicamente. En el original seguía ahí como un fantasma
+de largo cero en su esquina delantera hasta terminar de enderezarse; ese fantasma podía quedar
+encima de otro auto del carril de origen, y el auto de atrás lo tomaba como su líder, no veía al
+auto real y chocaba con él. En el carril DESTINO sigue contando desde que empieza el cambio, para
+que los autos de ese carril lo vean venir.
+"""
 @inline function miembro(est::Estado, k, ℓ)
-    est.giro[k] ? (ℓ == est.origen[k] || ℓ == destino_efectivo(est, k)) :
-                  (est.carril_lo[k] <= ℓ <= est.carril_hi[k])
+    if est.giro[k]
+        ℓ == destino_efectivo(est, k) && return true
+        ℓ == est.origen[k] || return false
+        return !est.p.fantasma_solo_si_ocupa || est.carril_lo[k] <= ℓ <= est.carril_hi[k]
+    end
+    return est.carril_lo[k] <= ℓ <= est.carril_hi[k]
 end
 
 """

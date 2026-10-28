@@ -88,6 +88,15 @@ Base.@kwdef struct Parametros
     # 3) Tiempo mínimo (en segundos) entre el final de un cambio de carril y el inicio del siguiente
     #    del mismo auto. Evita el ir y venir entre carriles.
     tiempo_entre_cambios::Float64 = 0.0
+
+    # Colisiones 3: un auto que se cambia de carril deja de contar en su carril de origen en cuanto ya
+    # no lo toca. Ver `miembro` en cambio_de_carril.jl (con 3 carriles su fantasma de largo cero podía
+    # quedar encima de un auto detenido y "taparlo" para el de atrás).
+    fantasma_solo_si_ocupa::Bool = false
+    # Colisiones 4: al calcular la velocidad segura, el auto también mira al auto de enfrente de su
+    # líder y frena por el más cercano. Cubre el caso inverso: el fantasma de largo cero de un auto que
+    # ENTRA al carril queda encima de otro auto del carril destino y lo tapa para el de atrás.
+    mirar_dos_adelante::Bool = false
 end
 
 numero_carriles(p::Parametros) = length(p.d_0)
