@@ -138,3 +138,12 @@ Las funciones sin archivo están en `src/cambio_de_carril.jl`. Se agregaron dos 
 | `validacion/n_carriles/exporta_animacion_2c.jl` | Animación de frenado y aceleración de la página de 2 carriles. |
 | `presentacion/exporta_animaciones_nuevo.jl` | Animaciones de la presentación con el modelo revisado. |
 | `presentacion/genera_presentacion_nueva.py` | Genera `presentacion_modelo_nuevo.html`. |
+
+## Barrido fino de densidad (2 carriles)
+
+`validacion/n_carriles/barrido_fino_2c.jl` corre el modelo revisado con ρ = 0.35 a 0.65 en pasos de
+0.02, ε = 0, 0.5, 0.7, 0.79, 0.89 y 1, y 5 semillas: 480 corridas. El modelo es determinista; cada
+semilla mueve la posición inicial de cada auto hasta ±0.1 u (≈ 0.35 m). Resultados en
+`validacion/n_carriles/fino/parte_*.csv` (ρ, ε, semilla, velocidad terminal en m/s, flujo, cambios de
+carril, segundos con choque). La pérdida de velocidad se mide contra la corrida con ε = 0 de la misma
+semilla.
