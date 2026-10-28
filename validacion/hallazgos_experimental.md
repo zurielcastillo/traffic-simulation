@@ -177,3 +177,20 @@ Con ε = 0 la velocidad terminal es la misma en los tres arranques. En el modelo
 solo pesa cuando hay un desbalance fuerte entre carriles que obliga a muchos cambios de carril. Con
 los carriles igual de llenos, el seguimiento empareja los huecos y casi nadie tiene motivo para
 cambiarse. Falta revisar si el modelo original de la tesis también depende así del arranque.
+
+## 8. Corridas largas: el embotellamiento por egoísmo es transitorio (2 carriles, modelo revisado)
+
+`n_carriles/larga_2c.jl`: 5000 s con el arranque de la tesis, ρ = 0.43, 0.45, 0.47, 0.51 y 0.55,
+ε = 0, 0.89 y 1, 3 semillas (resultados en `n_carriles/larga/`).
+
+- Todas las corridas terminan en el mismo flujo repartido: la velocidad final con ε = 0.89 o 1 queda
+  a menos de 2 % de la de ε = 0, y después de unos 1500 s ya no hay cambios de carril.
+- Lo que cambia con el egoísmo es cuánto tarda en llegar ahí. Se estabiliza en unos 400 a 550 s con
+  ε = 0, 800 a 1100 s con ε = 0.89 y 700 a 1550 s con ε = 1.
+- En los primeros 1000 s la velocidad media es de 2 a 4 m/s con egoísmo alto, contra 4 a 5 m/s con
+  ε = 0. Por eso el promedio de 500 a 1000 s (la velocidad terminal de la tesis) muestra la caída.
+- No hay choques en ninguna corrida.
+
+Conclusión: no hay dos estados estables. El egoísmo no cambia el estado final, pero alarga y hace más
+profundo el embotellamiento que se forma mientras los autos se redistribuyen entre carriles. La
+"velocidad terminal" medida de 500 a 1000 s mide en parte ese transitorio.
