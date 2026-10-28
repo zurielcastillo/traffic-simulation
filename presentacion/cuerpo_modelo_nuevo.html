@@ -1,0 +1,125 @@
+<header class="col heroe">
+  <div class="eti">Tesis de licenciatura · Física · UNAM, Facultad de Ciencias · modelo revisado</div>
+  <h1>Embotellamiento vehicular como función de estilos de manejo</h1>
+  <p class="sub">Los mismos pasos de la tesis, ahora con un modelo sin choques entre autos y con cambios de carril más realistas. ¿Sigue costando caro el egoísmo?</p>
+  <div class="autor">Zuriel Arath Castillo Capulin · Dir. Ricardo Atahualpa Solórzano Kraemer</div>
+</header>
+<div class="banda"><canvas class="via" id="vHeroe" data-alto="grande"></canvas></div>
+<div class="col">
+  <div class="tablero"><span>velocidad promedio <b id="hV">–</b> m/s</span><span>cambios de carril <b id="hC">0</b></span><span>tiempo simulado <b id="hT">0</b> s</span>
+  <span class="escala"><span>lento</span><span class="barra"></span><span>rápido</span></span></div>
+  <p class="tenue" style="font-size:.92rem">Simulación real del modelo revisado: 100 autos, dos carriles, ρ = 0.47 y egoísmo ε = 0.89. Todos arrancan detenidos en el carril derecho y el izquierdo empieza vacío, así que los primeros segundos son una ola de cambios de carril. El color de la estela marca la velocidad y las luces rojas se encienden al frenar.</p>
+</div>
+
+<main>
+<section class="col">
+  <div class="eti">La pregunta</div>
+  <h2>¿Qué es un conductor egoísta?</h2>
+  <p>Un conductor <span class="c-coop">altruista</span> se cambia de carril si el cambio lo beneficia, pero sin frenar a quienes ya van en el carril al que entra. Uno <span class="c-ego">egoísta</span> se cambia siempre que le convenga, aunque obligue a frenar al de atrás. El grado de egoísmo ε es la fracción de velocidad que el conductor está dispuesto a quitarle al auto que queda detrás:</p>
+  <div class="formula">1 − ε ≤ v<sub>después</sub> / v<sub>antes</sub></div>
+  <p class="tenue">Esta regla no cambió. Con ε = 0 nadie acepta frenar a otro; con ε = 0.89 un conductor acepta que el de atrás pierda hasta 89 % de su velocidad.</p>
+</section>
+
+<section class="col">
+  <div class="eti">El modelo</div>
+  <h2>Cada auto mantiene su distancia segura</h2>
+  <p>En cada paso de tiempo, cada auto elige la velocidad más alta que le permite conservar la distancia segura con el de enfrente. Esa distancia combina el espacio mínimo, la distancia de frenado y la que se recorre durante el tiempo de reacción.</p>
+  <div class="formula">Δx<sub>s</sub>(v) = d<sub>0</sub> + αv² / (2μg) + v·T<sub>reac</sub></div>
+  <div class="chips">
+    <span class="chip">v<sub>máx</sub> <b>14 m/s</b></span><span class="chip">d<sub>0</sub> <b>1.75 m</b></span><span class="chip">T<sub>reac</sub> <b>1 s</b></span>
+    <span class="chip">auto <b>4.5 × 1.8 m</b></span><span class="chip">autos <b>100</b></span><span class="chip">δt <b>0.1 s</b></span><span class="chip">duración <b>1000 s</b></span>
+  </div>
+</section>
+
+<section class="col">
+  <div class="eti">Qué se revisó</div>
+  <h2>Cuatro cambios para que nadie atraviese a nadie</h2>
+  <p>Al revisar la simulación cuadro por cuadro aparecieron autos encimados y cambios de carril imposibles. El modelo revisado corrige eso sin tocar la regla del egoísmo.</p>
+  <ol class="conc">
+    <li><p><b>Un auto encimado frena.</b> La separación con el de enfrente se calculaba en valor absoluto: si dos autos ya se tocaban, la separación salía positiva y el de atrás seguía avanzando. Ahora conserva su signo.</p></li>
+    <li><p><b>Nadie empieza a cambiarse detrás de alguien que se está cambiando.</b> La regla ya existía, pero el programa marcaba tarde que el de enfrente había empezado su cambio, y medio carril se cambiaba en el mismo instante.</p></li>
+    <li><p><b>El conductor tarda 1 s en notar ese cambio</b>, su mismo tiempo de reacción. Entre los dos extremos (enterarse nunca o al instante) está lo que hace una persona.</p></li>
+    <li><p><b>Solo se cambia quien tiene motivo.</b> Antes de aplicar ε, el auto revisa que vaya a menos del 95 % de su velocidad máxima, que el otro carril tenga al menos un largo de auto más de espacio y que hayan pasado 5 s desde su último cambio.</p></li>
+  </ol>
+  <div class="grande">
+    <div><strong class="c-coop">__NCHOQUES__</strong><span>__TXTCHOQUES__</span></div>
+    <div><strong class="c-coop">= </strong><span>con ε = 0 la velocidad y el flujo contra densidad quedan prácticamente iguales a los de la tesis</span></div>
+    <div><strong class="c-coop">230</strong><span>cambios de carril en ρ = 0.2, en lugar del vaivén de 4 400 que aparece si solo se agrega el tiempo de reacción</span></div>
+  </div>
+</section>
+
+<section class="col" style="padding-bottom:0">
+  <div class="eti">Un carril</div>
+  <h2>La densidad decide el régimen</h2>
+  <p>Con un solo carril no hay cambios de carril, así que esta parte no cambia: es la misma de la tesis. La densidad ρ mide qué fracción de la vía ocupan los autos. Tres corridas con los mismos 100 autos en anillos de distinto largo:</p>
+</section>
+<div id="unos"></div>
+<section class="col" style="padding-top:28px">
+  <div class="dos-graf">
+    <div><div class="eti">Figura 4.2</div><h3>Velocidad terminal</h3><div class="graf"><canvas id="g1v"></canvas></div></div>
+    <div><div class="eti">Figura 4.4</div><h3>Flujo terminal</h3><div class="graf"><canvas id="g1q"></canvas></div></div>
+  </div>
+  <p class="tenue">Hasta ρ ≈ 0.33 todos van a la velocidad máxima. Después la velocidad cae y el flujo alcanza su máximo, 0.79 autos/s, alrededor de ρ ≈ 0.5.</p>
+</section>
+
+<section class="col" style="padding-bottom:0">
+  <div class="eti">Dos carriles · hallazgo principal</div>
+  <h2>Misma vía, misma densidad, distinto estilo de manejo</h2>
+  <p>Las dos vías tienen 100 autos y densidad ρ = 0.47, ya en estado estacionario (a partir de 500 s). La única diferencia es el egoísmo de los conductores.</p>
+</section>
+<div class="col duelo-tit"><h3 class="c-coop">Cooperativos · ε = 0</h3><span class="lectura"><span id="d0v">–</span> m/s · <span id="d0c">0</span> cambios</span></div>
+<div class="banda"><canvas class="via" id="vD0"></canvas></div>
+<div class="col duelo-tit"><h3 class="c-ego">Egoístas · ε = 0.89</h3><span class="lectura"><span id="d9v">–</span> m/s · <span id="d9c">0</span> cambios</span></div>
+<div class="banda"><canvas class="via" id="vD9"></canvas></div>
+<section class="col" style="padding-top:20px">
+  <div class="leyenda"><span><i style="background:var(--coop)"></i>cooperativos</span><span><i style="background:var(--ego)"></i>egoístas</span><span>velocidad promedio en vivo (m/s)</span></div>
+  <canvas class="chispa" id="chispa"></canvas>
+  <div class="grande">
+    <div><strong class="c-ego">__CAIDA47__</strong><span>velocidad terminal en ρ = 0.47 con ε = 0.9 (de 6.3 a 4.0 m/s)</span></div>
+    <div><strong class="c-ego">__CAIDAQ__</strong><span>flujo terminal en ρ = 0.47 con ε = 0.79 (de 0.96 a 0.45 autos/s)</span></div>
+    <div><strong class="c-ego">__CAIDA53__</strong><span>velocidad en ρ = 0.53 con egoísmo total, ε = 1 (de 5.3 a 3.4 m/s)</span></div>
+  </div>
+  <div class="dos-graf">
+    <div><div class="eti">Figura 4.6</div><h3>Velocidad terminal contra egoísmo</h3>
+      <div class="leyenda" id="ley46"></div><div class="graf"><canvas id="g46"></canvas></div></div>
+    <div><div class="eti">Figura 4.9</div><h3>Flujo terminal contra densidad</h3>
+      <div class="leyenda" id="ley49"></div><div class="graf"><canvas id="g49"></canvas></div></div>
+  </div>
+  <p class="tenue">El egoísmo no importa a densidades bajas ni muy altas. Su efecto se concentra alrededor de ρ ≈ 0.47, justo después del máximo de flujo, y aparece a partir de ε ≈ 0.7: ahí basta un cambio de carril agresivo para que la frenada se propague y el carril no se recupere.</p>
+  <div><div class="eti">Figura 4.5 c</div><h3>Velocidad promedio en el tiempo, ρ = 0.47</h3></div>
+  <div class="leyenda" id="ley45"></div>
+  <div class="graf"><canvas id="g45"></canvas></div>
+</section>
+
+<section class="col">
+  <div class="eti">Antes y ahora</div>
+  <h2>El efecto del egoísmo sobrevive, en una ventana más angosta</h2>
+  <p>Velocidad terminal contra ε con el modelo de la tesis y con el modelo revisado, en las dos densidades donde el egoísmo pesa.</p>
+  <div class="leyenda" id="leyAA"></div>
+  <div class="dos-graf">
+    <div><h3>ρ = 0.47</h3><div class="graf"><canvas id="gAA47"></canvas></div></div>
+    <div><h3>ρ = 0.53</h3><div class="graf"><canvas id="gAA53"></canvas></div></div>
+  </div>
+  <p class="tenue">En la tesis el egoísmo frenaba el tráfico en ρ = 0.53 y 0.87, pero parte de ese efecto venía de los cambios de carril simultáneos. Con el modelo revisado el efecto se mueve a ρ ≈ 0.47, donde es más fuerte (la velocidad cae 37 %), y casi desaparece en ρ = 0.87.</p>
+</section>
+
+__SECCION_N__
+
+<section class="col">
+  <div class="eti">Conclusiones</div>
+  <h2>Manejar egoístamente sigue siendo colectivamente ineficiente</h2>
+  <ol class="conc">
+    <li><p>En un carril, la velocidad terminal depende de la densidad con transiciones más abruptas que las que predice la función BPR.</p></li>
+    <li><p>El modelo revisado no tiene choques y, con conductores cooperativos, reproduce la velocidad y el flujo de la tesis en todas las densidades.</p></li>
+    <li><p>A bajas densidades y cerca de la saturación el estilo de manejo no importa: o sobra espacio o nadie puede cambiarse.</p></li>
+    <li><p>Cerca de ρ ≈ 0.47, justo después del máximo de flujo, el egoísmo alto (ε ≳ 0.7) reduce la velocidad hasta 37 % y el flujo a la mitad.</p></li>
+    <li><p>Parte del efecto que reportaba la tesis en otras densidades venía de cambios de carril simultáneos, un artefacto del código. La conclusión cualitativa se sostiene, pero la ventana de densidad es más angosta.</p></li>
+  </ol>
+</section>
+</main>
+
+<footer class="col">
+  <p>Modelo revisado: rama <code>experimental_colisiones_idm</code>, opción <code>filtros_reac</code> de <code>validacion/n_carriles/corre_n.jl</code> (separación con signo, líder por fantasma, velocidad no negativa, no cambiar detrás de un auto que se cambia, 1 s para notarlo, y filtros de necesidad, ganancia y espera). Dos carriles con T<sub>reac</sub> = 1 s; un carril con T<sub>reac</sub> = 0.3 s, el valor con el que se reproducen las Figuras 4.2 y 4.4. Velocidad terminal promediada de 500 a 1000 s. Las animaciones avanzan 2.4 veces más rápido que el tiempo simulado.</p>
+  <p>Los resultados de gasolina de la tesis (Figura 4.10) no se recalcularon con el modelo revisado.</p>
+</footer>
+<button class="boton barra-sup" id="pausa" type="button">Pausar</button>
