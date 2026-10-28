@@ -33,12 +33,13 @@
 
 <section class="col">
   <div class="eti">Qué se revisó</div>
-  <h2>Cuatro cambios para que nadie atraviese a nadie</h2>
+  <h2>Cinco cambios para que nadie atraviese a nadie</h2>
   <p>Al revisar la simulación cuadro por cuadro aparecieron autos encimados y cambios de carril imposibles. El modelo revisado corrige eso sin tocar la regla del egoísmo.</p>
   <ol class="conc">
     <li><p><b>Un auto encimado frena.</b> La separación con el de enfrente se calculaba en valor absoluto: si dos autos ya se tocaban, la separación salía positiva y el de atrás seguía avanzando. Ahora conserva su signo.</p></li>
     <li><p><b>Nadie empieza a cambiarse detrás de alguien que se está cambiando.</b> La regla ya existía, pero el programa marcaba tarde que el de enfrente había empezado su cambio, y medio carril se cambiaba en el mismo instante.</p></li>
     <li><p><b>El conductor tarda 1 s en notar ese cambio</b>, su mismo tiempo de reacción, como lo haría una persona.</p></li>
+    <li><p><b>Nadie se guía por un fantasma.</b> Un auto a medio cambio deja una marca de largo cero en el carril que asoma o que deja. Si esa marca queda encima de otro auto, el de atrás se guiaba por ella y no veía al auto real. Ahora cada auto mira también al que va delante de su líder y frena por el más cercano.</p></li>
     <li><p><b>Solo se cambia quien tiene motivo.</b> Antes de aplicar ε, el auto revisa que vaya a menos del 95 % de su velocidad máxima, que el otro carril tenga al menos un largo de auto más de espacio y que hayan pasado 5 s desde su último cambio.</p></li>
   </ol>
   <div class="grande">
@@ -74,9 +75,9 @@
   <div class="leyenda"><span><i style="background:var(--coop)"></i>cooperativos</span><span><i style="background:var(--ego)"></i>egoístas</span><span>velocidad promedio en vivo (m/s)</span></div>
   <canvas class="chispa" id="chispa"></canvas>
   <div class="grande">
-    <div><strong class="c-ego">__CAIDA47__</strong><span>velocidad terminal en ρ = 0.47 con ε = 0.9 (de 6.3 a 4.0 m/s)</span></div>
+    <div><strong class="c-ego">__CAIDA47__</strong><span>velocidad terminal en ρ = 0.47 con ε = 0.79 (de 6.4 a 3.0 m/s)</span></div>
     <div><strong class="c-ego">__CAIDAQ__</strong><span>flujo terminal en ρ = 0.47 con ε = 0.79 (de 0.96 a 0.45 autos/s)</span></div>
-    <div><strong class="c-ego">__CAIDA53__</strong><span>velocidad en ρ = 0.53 con egoísmo total, ε = 1 (de 5.3 a 3.4 m/s)</span></div>
+    <div><strong class="c-ego">__CAIDA53__</strong><span>velocidad en ρ = 0.53 con egoísmo total, ε = 1 (de 5.3 a 3.8 m/s)</span></div>
   </div>
   <div class="dos-graf">
     <div><div class="eti">Figura 4.6</div><h3>Velocidad terminal contra egoísmo</h3>
@@ -99,7 +100,7 @@
     <div><h3>ρ = 0.47</h3><div class="graf"><canvas id="gAA47"></canvas></div></div>
     <div><h3>ρ = 0.53</h3><div class="graf"><canvas id="gAA53"></canvas></div></div>
   </div>
-  <p class="tenue">En la tesis el egoísmo frenaba el tráfico en ρ = 0.53 y 0.87, pero parte de ese efecto venía de los cambios de carril simultáneos. Con el modelo revisado el efecto se mueve a ρ ≈ 0.47, donde es más fuerte (la velocidad cae 37 %), y casi desaparece en ρ = 0.87.</p>
+  <p class="tenue">En la tesis el egoísmo frenaba el tráfico en ρ = 0.53 y 0.87, pero parte de ese efecto venía de los cambios de carril simultáneos. Con el modelo revisado el efecto se mueve a ρ ≈ 0.47, donde es más fuerte (la velocidad baja entre 30 y 50 %), y casi desaparece en ρ = 0.87.</p>
 </section>
 
 __SECCION_N__
@@ -111,7 +112,7 @@ __SECCION_N__
     <li><p>En un carril, la velocidad terminal depende de la densidad con transiciones más abruptas que las que predice la función BPR.</p></li>
     <li><p>El modelo revisado no tiene choques y, con conductores cooperativos, reproduce la velocidad y el flujo de la tesis en todas las densidades.</p></li>
     <li><p>A bajas densidades y cerca de la saturación el estilo de manejo no importa: o sobra espacio o nadie puede cambiarse.</p></li>
-    <li><p>Cerca de ρ ≈ 0.47, justo después del máximo de flujo, el egoísmo alto (ε ≳ 0.7) reduce la velocidad hasta 37 % y el flujo a la mitad.</p></li>
+    <li><p>Cerca de ρ ≈ 0.47, justo después del máximo de flujo, el egoísmo alto (ε ≳ 0.7) reduce la velocidad y el flujo hasta la mitad.</p></li>
     <li><p>Parte del efecto que reportaba la tesis en otras densidades venía de cambios de carril simultáneos, un artefacto del código. La conclusión cualitativa se sostiene, pero la ventana de densidad es más angosta.</p></li>
   </ol>
 </section>

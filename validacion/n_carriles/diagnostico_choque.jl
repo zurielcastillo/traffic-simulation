@@ -12,7 +12,7 @@ L = ntot*(largo + d0)/(nc*ρ)
 mx = floor(Int, L/(largo + d0)); ns = zeros(Int, nc); r = ntot
 for k in 1:nc; ns[k] = min(mx, r); global r -= ns[k]; end
 p = parametros_experimentales(; modelo_aceleracion = :original, t_aviso_giro = 1.0, fraccion_necesidad = 0.95,
-                              fantasma_solo_si_ocupa = true, mirar_dos_adelante = true,
+                              mirar_dos_adelante = true,
                               umbral_ganancia = largo, tiempo_entre_cambios = 5.0, L = L, egoismo = ε, d_0 = fill(d0, nc))
 est = crear_estado(p, ns, fill(d0, nc))
 

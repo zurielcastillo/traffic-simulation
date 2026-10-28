@@ -91,7 +91,8 @@ Base.@kwdef struct Parametros
 
     # Colisiones 3: un auto que se cambia de carril deja de contar en su carril de origen en cuanto ya
     # no lo toca. Ver `miembro` en cambio_de_carril.jl (con 3 carriles su fantasma de largo cero podía
-    # quedar encima de un auto detenido y "taparlo" para el de atrás).
+    # quedar encima de un auto detenido y "taparlo" para el de atrás). PROBADO Y DESCARTADO: quita los choques
+    # pero el tráfico se atora en densidades medias; el modelo revisado usa `mirar_dos_adelante` en su lugar.
     fantasma_solo_si_ocupa::Bool = false
     # Colisiones 4: al calcular la velocidad segura, el auto también mira al auto de enfrente de su
     # líder y frena por el más cercano. Cubre el caso inverso: el fantasma de largo cero de un auto que

@@ -17,4 +17,3 @@ graf('gN53', ['2', '3', '4'].map(k => lin(G.n[k].ego53.map(([x, y]) => ({x, y}))
      'egoísmo ε', 'velocidad terminal (m/s)', {x: {min: 0, max: 1}, y: {min: 0}});
 graf('gNq', ['2', '3', '4'].map(k => lin(xy(G.rho, G.n[k].q0), CN[k])),
      'densidad ρ', 'flujo por carril (autos/s)', {x: {min: 0, max: 1}, y: {min: 0}});
-document.getElementById('nGraves').textContent = G.n['3'].grave;

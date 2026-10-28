@@ -11,7 +11,6 @@
 #                          si va a menos del 95 % de v_max, si el otro carril tiene al menos un largo de
 #                          auto más de hueco y si pasaron 5 s desde su último cambio (ε se aplica igual)
 #            filtros_reac  MODELO REVISADO: filtros + 1 s de reacción para notar el cambio del de enfrente
-#                          + sin fantasma en el carril de origen cuando el auto ya no lo toca
 #                          + mira también al de enfrente de su líder (`mirar_dos_adelante`)
 #   limite = corre solo los primeros `limite` trabajos (para pruebas rápidas); 0 = todos
 #   carriles = corre solo ese número de carriles, p. ej. 2 (opcional, 6.º argumento)
@@ -29,9 +28,10 @@ function parametros(; kw...)
     MODELO == "reaccion" && return parametros_experimentales(; modelo_aceleracion = :original, t_aviso_giro = 1.0, kw...)
     MODELO == "reaccion05" && return parametros_experimentales(; modelo_aceleracion = :original, t_aviso_giro = 0.5, kw...)
     filtros = (fraccion_necesidad = 0.95, umbral_ganancia = largo, tiempo_entre_cambios = 5.0)
-    # el modelo revisado (filtros_reac) también quita el fantasma del carril de origen (`fantasma_solo_si_ocupa`)
+    # el modelo revisado (filtros_reac) también mira al líder de su líder (`mirar_dos_adelante`), para que un
+    # fantasma de largo cero encimado con otro auto no lo tape
     MODELO == "filtros" && return parametros_experimentales(; modelo_aceleracion = :original, filtros..., kw...)
-    MODELO == "filtros_reac" && return parametros_experimentales(; modelo_aceleracion = :original, t_aviso_giro = 1.0, fantasma_solo_si_ocupa = true, mirar_dos_adelante = true,
+    MODELO == "filtros_reac" && return parametros_experimentales(; modelo_aceleracion = :original, t_aviso_giro = 1.0, mirar_dos_adelante = true,
                                                                 filtros..., kw...)
     error("modelo desconocido: $MODELO (usar original, colisiones, experimental, reaccion, reaccion05, filtros o filtros_reac)")
 end

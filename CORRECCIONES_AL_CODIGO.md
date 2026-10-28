@@ -20,8 +20,7 @@ p = parametros_experimentales(; modelo_aceleracion = :original,      # sin IDM
                               fraccion_necesidad = 0.95,              # cambio conceptual 3
                               umbral_ganancia = 9/7,
                               tiempo_entre_cambios = 5.0,
-                              fantasma_solo_si_ocupa = true,          # corrección 5
-                              mirar_dos_adelante = true,              # corrección 6
+                              mirar_dos_adelante = true,              # corrección 5
                               L = L, egoismo = ε, d_0 = fill(0.5, nc))
 est = crear_estado(p, autos_por_carril, fill(0.5, nc))
 ```
@@ -84,30 +83,32 @@ cambiarse en el mismo paso.
   egoísmo en ρ = 0.53 (de 5.3 a 3.7 m/s) se debía casi por completo a este error. Con solo esta
   corrección la velocidad queda en 5.3 m/s para cualquier ε (`validacion/n_carriles/aisla_correcciones.jl`).
 
-### 5. Fantasma en el carril de origen ya abandonado — `fantasma_solo_si_ocupa`
+### 5. Un fantasma de largo cero tapa al auto real — `mirar_dos_adelante`
 
-Un auto que gira cuenta en su carril de origen y en el destino. Cuando ya está entero en el destino
-pero todavía no se endereza, `actualiza_cache!` le deja en el origen un fantasma de largo cero en su
-esquina delantera. Con 3 carriles ese fantasma quedaba encima de un auto detenido. El de atrás lo
-tomaba como líder, no veía al auto real y chocaba. El que giraba también quedaba atorado, porque su
-fantasma encimado lo frenaba a 0.
+Un auto que se cambia de carril cuenta en su carril de origen y en el destino. En el carril donde solo
+asoma (o donde ya no está), `actualiza_cache!` le pone un fantasma de largo cero en su esquina
+delantera. Ese fantasma puede quedar encima de otro auto del mismo carril. Como en el orden del carril
+el auto real queda "detrás" del fantasma, el auto de atrás toma al fantasma como su líder, no ve al
+auto real y choca con él. Pasa en los dos sentidos:
 
-- **Arreglo.** `miembro` ya no cuenta al auto en su carril de origen cuando no lo toca
-  (`carril_lo ≤ ℓ ≤ carril_hi`). En el destino cuenta desde el principio.
-- **Dónde.** `miembro` en `src/cambio_de_carril.jl`.
-- **Diagnóstico.** `validacion/n_carriles/diagnostico_choque.jl 3 0.53 0.89`: con el código anterior,
-  el primer choque es en t = 156.2 s entre los autos 53 y 55, tapados por el fantasma del 54.
-
-### 6. Fantasma del auto que entra tapa a otro — `mirar_dos_adelante`
-
-Es el caso inverso. El fantasma de largo cero de un auto que entra a un carril puede quedar encima de
-un auto de ese carril, que entonces queda detrás del fantasma en el orden y el de atrás no lo ve. Con
-la corrección 5 puesta, el mismo diagnóstico encontraba este caso en t = 445.8 s.
+- **Auto que sale.** Ya está entero en el carril destino, pero todavía no termina de enderezarse, y su
+  fantasma sigue en el carril de origen. Diagnóstico: `validacion/n_carriles/diagnostico_choque.jl 3
+  0.53 0.89`, primer choque en t = 156.2 s entre los autos 53 y 55, tapados por el fantasma del 54.
+- **Auto que entra.** Todavía está entero en su carril, y su fantasma en el carril destino quedó
+  encima de un auto de ese carril. Mismo diagnóstico, t = 445.8 s, autos 35 y 36 tapados por el 62.
 
 - **Arreglo.** En el paso 1 de `paso_auto!` el auto mira también al líder de su líder
-  (`lider(est, k, ℓ)`) y usa la separación más chica. Se descarta si está del otro lado del anillo
-  (`abs(sep2) ≥ L/2`).
+  (`lider(est, k, ℓ)`) y frena por el que tenga la defensa trasera más cerca. Se descarta si está del
+  otro lado del anillo (`abs(sep2) ≥ L/2`).
 - **Dónde.** `paso_auto!` en `src/simulacion.jl`, paso 1.
+
+### Probado y descartado: sacar al auto de su carril de origen — `fantasma_solo_si_ocupa`
+
+Otra forma de evitar el caso del auto que sale es que deje de contar en su carril de origen en cuanto
+ya no lo toca (`miembro` en `src/cambio_de_carril.jl`). Quita los choques, pero cambia mucho la
+dinámica. Con 2, 3 y 4 carriles el tráfico se quedaba casi detenido en la mayoría de las densidades
+medias; por ejemplo, en 2 carriles con ρ = 0.33 la velocidad terminal pasaba de 9.5 m/s a 0. La
+opción se deja en el código, apagada, y el modelo revisado no la usa.
 
 ---
 

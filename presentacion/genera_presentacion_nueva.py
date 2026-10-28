@@ -71,12 +71,12 @@ def pct(a, b):
     return f"{round(100*(b - a)/a):+d} %".replace("-", "−")
 v = lambda fs, r, e, c="vt": next(x for x in fs if abs(x["rho"] - r) < 1e-3 and abs(x["eps"] - e) < 1e-6)[c]
 cuerpo = open(os.path.join(AQUI, "cuerpo_modelo_nuevo.html"), encoding="utf8").read()
-cuerpo = (cuerpo.replace("__CAIDA47__", pct(v(f2, 0.47, 0.0), v(f2, 0.47, 0.9)))
+cuerpo = (cuerpo.replace("__CAIDA47__", pct(v(f2, 7/15, 0.0), v(f2, 7/15, 0.79)))
                 .replace("__CAIDAQ__", pct(v(f2, 7/15, 0.0, "Q"), v(f2, 7/15, 0.79, "Q")))
                 .replace("__CAIDA53__", pct(v(f2, 0.53, 0.0), v(f2, 0.53, 1.0)))
                 .replace("__NCHOQUES__", str(graves))
                 .replace("__TXTCHOQUES__", f"choques graves en {len(todas)} corridas de 2, 3 y 4 carriles con el modelo revisado "
-                                           f"(roces leves en {roces}). Con el modelo de la tesis, 44 a 49 % de las corridas de 3 y 4 carriles tenían choques graves")
+                                           f"(roces: {roces}). Con el modelo de la tesis, 44 a 49 % de las corridas de 3 y 4 carriles tenían choques graves")
                 .replace("__SECCION_N__", open(os.path.join(AQUI, "seccion_n_carriles.html"), encoding="utf8").read()))
 extra = open(os.path.join(AQUI, "graficas_modelo_nuevo.js"), encoding="utf8").read()
 html = css + "\n\n" + cuerpo + "\n\n<script>const G=" + json.dumps(G, separators=(",", ":")) + ";\n" + A + "</script>\n" + codigo.rstrip()
