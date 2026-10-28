@@ -24,8 +24,10 @@ def lee(rutas):
 
 
 modelos = {"original": lee([os.path.join(AQUI, "resultados.csv")])}
-for m in ("colisiones", "experimental", "reaccion05", "reaccion"):
-    rutas = sorted(glob.glob(os.path.join(AQUI, "partes", f"{m}_*.csv")))
+for m in ("colisiones", "experimental", "reaccion05", "reaccion", "filtros", "filtros_reac"):
+    # solo <modelo>_<número>.csv, para que "filtros" no tome también los de "filtros_reac"
+    rutas = sorted(r for r in glob.glob(os.path.join(AQUI, "partes", f"{m}_*.csv"))
+                   if os.path.basename(r)[len(m) + 1:-4].isdigit())
     if rutas:
         modelos[m] = lee(rutas)
 

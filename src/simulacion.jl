@@ -22,7 +22,7 @@ function crear_estado(p::Parametros, n_por_carril::Vector{Int}, separaciones::Ve
     N = length(vehs)
     est = Estado(p, nc, vehs, falses(N), zeros(N), zeros(Int, N), zeros(Int, N),
                  indices_alternados(n_por_carril), zeros(Int, N), zeros(Int, N),
-                 zeros(Int, 2, N), zeros(2, N), zeros(2, N), zeros(2, N), 0, fill(typemin(Int), N),
+                 zeros(Int, 2, N), zeros(2, N), zeros(2, N), zeros(2, N), 0, fill(typemin(Int), N), fill(typemin(Int), N),
                  Int[], Float64[], Float64[], Float64[])
     for k in 1:N
         a = vehs[k]
@@ -86,6 +86,11 @@ function paso_auto!(est::Estado, i)
         o = est.origen[i]
         candidatos = est.destino[i] != o ? (est.destino[i],) :
                      (o > 1 && o < est.nc) ? (o - 1, o + 1) : (o > 1 ? (o - 1,) : (o < est.nc ? (o + 1,) : ()))
+        # filtros experimentales antes de buscar carril (ver `quiere_cambiar`): si el auto no tiene
+        # motivo para cambiarse, o acaba de cambiarse, ni siquiera evalúa los carriles vecinos
+        if est.destino[i] == o && !quiere_cambiar(est, i)
+            candidatos = ()
+        end
         if length(candidatos) == 2
             # con dos opciones se evalúa primero el carril con más espacio enfrente
             s1 = hueco_enfrente(est, i, candidatos[1], 1); s2 = hueco_enfrente(est, i, candidatos[2], 2)
@@ -117,6 +122,7 @@ function paso_auto!(est::Estado, i)
     # 5) si terminó el cambio, el carril nuevo pasa a ser el de origen
     if !est.giro[i] && lo0 == hi0 && lo0 != est.origen[i]
         est.origen[i] = lo0; est.destino[i] = lo0
+        est.t_fin_cambio[i] = est.t   # para `tiempo_entre_cambios`
     end
 
     # 6) mover y condición periódica

@@ -72,6 +72,22 @@ Base.@kwdef struct Parametros
     # cambio, así que se vuelven posibles los cambios "en cadena" pero espaciados, no todos en el mismo
     # paso como en el original. El valor natural es el tiempo de reacción del modelo, T_reac = 1 s.
     t_aviso_giro::Float64 = 0.0
+
+    # Filtros para que los cambios de carril sean realistas. Se revisan ANTES de la regla de
+    # egoísmo ε, que se queda igual: un auto solo evalúa cambiarse (y luego aplica ε) si pasa
+    # los tres filtros. Con los valores por defecto ningún filtro actúa.
+    #
+    # 1) Necesidad: el auto solo considera cambiarse si va más lento que `fraccion_necesidad * v_max`.
+    #    `Inf` apaga el filtro. Un valor típico es 0.95: quien ya va libre a su velocidad deseada no
+    #    tiene motivo para cambiarse (en el original, a baja densidad, se cambiaban sin parar).
+    fraccion_necesidad::Float64 = Inf
+    # 2) Umbral de ganancia (histéresis): el hueco enfrente en el carril destino debe ser mayor que el
+    #    del carril actual por AL MENOS esta distancia (en unidades; un auto mide 9/7 ≈ 1.29 u).
+    #    En el original basta con que sea mayor, aunque sea por un milímetro.
+    umbral_ganancia::Float64 = 0.0
+    # 3) Tiempo mínimo (en segundos) entre el final de un cambio de carril y el inicio del siguiente
+    #    del mismo auto. Evita el ir y venir entre carriles.
+    tiempo_entre_cambios::Float64 = 0.0
 end
 
 numero_carriles(p::Parametros) = length(p.d_0)
@@ -131,6 +147,9 @@ mutable struct Estado
     # paso en que cada auto decidió su último cambio de carril (para `t_aviso_giro`);
     # vale typemin(Int) si nunca ha decidido uno
     t_decision::Vector{Int}
+    # paso en que cada auto terminó su último cambio de carril (para `tiempo_entre_cambios`);
+    # vale typemin(Int) si nunca ha terminado uno
+    t_fin_cambio::Vector{Int}
     # buffers reutilizables para la predicción del carril destino
     buf_idx::Vector{Int}
     buf_y::Vector{Float64}

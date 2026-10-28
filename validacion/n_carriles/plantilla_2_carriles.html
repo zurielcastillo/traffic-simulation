@@ -12,6 +12,7 @@
   --m-col:#0f8a7e;    /* solo colisiones: verde azulado */
   --m-idm:#c27a12;    /* colisiones + IDM: ámbar de señal */
   --m-reac:#a23b72;   /* colisiones + tiempo de reacción: magenta */
+  --m-filt:#6a4fc4;   /* reacción + filtros de cambio realista: morado */
   --bad:#c2410c;
   --asfalto:#2b313b; --raya:#e8e3c8;            /* la pista se ve igual en ambos temas */
   --a-frena:#e5483a; --a-neutro:#c9ced8; --a-acel:#3fbf7f;
@@ -21,10 +22,10 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#12151b; --panel:#1a1f27; --fg:#e6e9ef; --muted:#9aa3b2; --line:#2c333f; --grid:#232a34;
-  --m-orig:#93a3c0; --m-col:#3cc4b4; --m-idm:#e9a53e; --m-reac:#e07ab0; --bad:#f08a5d; color-scheme:dark}}
+  --m-orig:#93a3c0; --m-col:#3cc4b4; --m-idm:#e9a53e; --m-reac:#e07ab0; --m-filt:#a893f0; --bad:#f08a5d; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#12151b; --panel:#1a1f27; --fg:#e6e9ef; --muted:#9aa3b2; --line:#2c333f; --grid:#232a34;
-  --m-orig:#93a3c0; --m-col:#3cc4b4; --m-idm:#e9a53e; --m-reac:#e07ab0; --bad:#f08a5d; color-scheme:dark}
+  --m-orig:#93a3c0; --m-col:#3cc4b4; --m-idm:#e9a53e; --m-reac:#e07ab0; --m-filt:#a893f0; --bad:#f08a5d; color-scheme:dark}
 body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--f-body)}
 .wrap{max-width:860px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:28px}
 h1,h2{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0;line-height:1.2}
@@ -137,7 +138,9 @@ code{font:.86em var(--f-data);background:var(--grid);padding:1px 5px;border-radi
       <div><div class="eyebrow">Cambios de carril en 1000 s, contra egoísmo</div><svg id="g-rc" viewBox="0 0 400 260" role="img" aria-label="Cambios de carril contra egoísmo con tiempo de reacción"></svg></div>
     </div>
     <p class="hallazgo"><strong>El efecto del egoísmo regresa, y más fuerte que en el original.</strong> En ρ = 0.53 la velocidad empieza a caer en ε ≈ 0.4 y desde ε ≈ 0.6 queda cerca de 1 m/s. En el original la caída empieza en ε ≈ 0.75 y solo llega a 3.6 m/s. Durante ese segundo de reacción varios autos seguidos alcanzan a empezar su cambio, y con más egoísmo se meten en huecos más chicos.</p>
-    <p class="nota">Pero aparece un problema nuevo con poca densidad. En ρ = 0.2 los autos hacen 4 400 cambios de carril y la velocidad baja de 14 a 7.8 m/s, sin importar ε. Es todo el pelotón cambiándose de un carril al otro y regresando: cada auto ve que el de enfrente se cambió, todavía no lo “nota” y se cambia también, y luego el carril que dejaron vacío tiene más espacio. La regla de cambio no tiene un umbral de ganancia (histéresis), así que nada detiene ese vaivén. Antes de usar el tiempo de reacción en la tesis hay que agregar ese umbral (como el de la regla MOBIL).</p>
+    <p class="nota">Pero aparece un problema nuevo con poca densidad. En ρ = 0.2 los autos hacen 4 400 cambios de carril y la velocidad baja de 14 a 7.8 m/s, sin importar ε. Es todo el pelotón cambiándose de un carril al otro y regresando: cada auto ve que el de enfrente se cambió, todavía no lo “nota” y se cambia también, y luego el carril que dejaron vacío tiene más espacio. La regla de cambio no tiene un umbral de ganancia (histéresis), así que nada detiene ese vaivén.</p>
+    <p class="hallazgo"><strong>Con los filtros de cambio realista se quita el vaivén y se conserva un efecto del egoísmo moderado.</strong> La línea morada agrega tres filtros que se revisan antes de la regla de ε, que no cambia. El auto solo busca otro carril si va a menos del 95 % de v_max, si el otro carril tiene al menos un largo de auto más de hueco y si ya pasaron 5 s desde su último cambio. Con ε = 0 el diagrama fundamental queda prácticamente igual al original en todas las densidades, y en ρ = 0.2 vuelve a 14 m/s con unos 230 cambios en lugar de 4 400. El egoísmo vuelve a pesar en densidad media: en ρ = 0.53 la velocidad baja a 4.9 m/s con ε = 0.8 y a 3.4 m/s con ε = 1, y en ρ = 0.47 baja de 6.3 a 4.0 m/s desde ε ≈ 0.7. No hay ningún choque.</p>
+    <p class="nota">Los filtros sin el tiempo de reacción dan lo mismo que “solo colisiones”: sin egoísmo visible. Es la combinación de las dos cosas la que da un modelo sin artefactos y con efecto del egoísmo.</p>
   </div>
 </section>
 
@@ -278,6 +281,7 @@ dibujaEgoismo(0.53);
     {k:"original", n:"Original", c:"--m-orig"},
     {k:"colisiones", n:"Solo colisiones (nota al instante)", c:"--m-col"},
     {k:"reaccion", n:"Colisiones + 1 s de reacción", c:"--m-reac"},
+    {k:"filtros_reac", n:"Reacción + filtros de cambio realista", c:"--m-filt"},
   ];
   $("leyenda-r").innerHTML = MR.map(m => `<span><i style="background:var(${m.c})"></i>${m.n}</span>`).join("");
   function dibuja(rho){

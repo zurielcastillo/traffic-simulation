@@ -116,3 +116,31 @@ cambio sin poder terminarlo ni regresar. El IDM necesita una regla de cambio de 
    `hallazgos_replica_tesis.md`), para poder comparar ambos casos.
 8. **Cuello de botella.** Un tramo donde se pierde un carril (de 3 a 2) en lugar del anillo uniforme.
    Es donde más se nota el egoísmo en la práctica y daría una figura nueva para la tesis.
+
+## 5. Tiempo de reacción y filtros de cambio realista (2 carriles)
+
+Dos opciones nuevas, apagadas por defecto:
+
+- `t_aviso_giro`: el auto de atrás nota que el de enfrente empezó a cambiar de carril hasta después
+  de este tiempo (1 s en las pruebas). Con 0 se nota al instante, como en el modelo "colisiones".
+- Filtros que se revisan ANTES de la regla de egoísmo ε, que no cambia:
+  `fraccion_necesidad = 0.95` (solo busca otro carril si va a menos del 95 % de v_max),
+  `umbral_ganancia = 9/7` (el otro carril debe tener al menos un largo de auto más de hueco) y
+  `tiempo_entre_cambios = 5` s (espera mínima entre un cambio y el siguiente).
+
+Modelos en `corre_n.jl`: `reaccion` (1 s), `reaccion05` (0.5 s), `filtros` y `filtros_reac`.
+
+| Caso | Original | Colisiones | Reacción 1 s | Filtros + reacción |
+|---|---|---|---|---|
+| ρ = 0.2, ε = 0: v (m/s) / cambios | 14.0 / 150 | 14.0 / 50 | 7.8 / 4 400 | 14.0 / 230 |
+| ρ = 0.47, ε = 0.9 | 6.4 | 6.4 | 1.4 | 4.0 |
+| ρ = 0.53, ε = 0.8 | 3.7 | 5.3 | 0.9 | 4.9 |
+| ρ = 0.53, ε = 1.0 | 3.6 | 5.3 | 1.0 | 3.4 |
+| ρ = 0.87, ε = 0.9 | 1.4 | 1.7 | 0.9 | 1.7 |
+
+- Solo con el tiempo de reacción, el efecto del egoísmo regresa muy exagerado y aparece un vaivén de
+  pelotones a baja densidad: todo el pelotón se cambia de carril y luego regresa.
+- Con los filtros y la reacción se quita el vaivén, el diagrama con ε = 0 queda prácticamente igual
+  al original y el egoísmo baja la velocidad en densidad media, de forma parecida a la tesis.
+  No hay choques en ninguna corrida.
+- Los filtros sin reacción dan lo mismo que "colisiones" (sin efecto del egoísmo).

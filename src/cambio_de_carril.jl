@@ -218,6 +218,21 @@ function percibe_cambio(est::Estado, k)
     return (est.t - td)*est.p.δt >= est.p.t_aviso_giro
 end
 
+"""
+filtros de necesidad y de tiempo mínimo entre cambios (ver `Parametros`): true si el auto i
+tiene motivo para buscar otro carril. El umbral de ganancia se revisa en `decide_cambiar_general`,
+porque necesita los huecos de cada carril.
+"""
+function quiere_cambiar(est::Estado, i)
+    p = est.p
+    # 1) necesidad: solo si va más lento de lo que quiere
+    est.vehs[i].vel[2] < p.fraccion_necesidad*p.v_max || return false
+    # 3) tiempo mínimo desde que terminó su último cambio
+    tf = est.t_fin_cambio[i]
+    tf != typemin(Int) && (est.t - tf)*p.δt < p.tiempo_entre_cambios && return false
+    return true
+end
+
 frontera(p::Parametros, o, t) = fin_carril(p, min(o, t))
 centro_destino(p::Parametros, o, t) = t > o ? frontera(p, o, t) + p.ancho_carril/2 : frontera(p, o, t) - p.ancho_carril/2
 
@@ -267,7 +282,9 @@ function decide_cambiar_general(est::Estado, i, θ1, o, t)
     end
     # incentivo de velocidad (desactivado en el original)
     p.incentivo_velocidad && a.vel[2] > vprom_t && return false
-    sep_cur > sep_t && return false
+    # el carril destino debe tener más espacio enfrente; con `umbral_ganancia` > 0 debe tener
+    # claramente más (histéresis). Con umbral 0 es la condición original.
+    sep_cur + p.umbral_ganancia > sep_t && return false
     M == 0 && return true
     return decide_cambiar(est, i, tgt, esquina)
 end

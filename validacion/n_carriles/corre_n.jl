@@ -7,6 +7,10 @@
 #            reaccion      como colisiones, pero el auto de atrás tarda T_reac (1 s) en notar que el de
 #                          enfrente empezó a cambiar de carril (`t_aviso_giro`)
 #            reaccion05    igual, con 0.5 s
+#            filtros       como colisiones, más los filtros de cambio de carril realistas: solo se cambia
+#                          si va a menos del 95 % de v_max, si el otro carril tiene al menos un largo de
+#                          auto más de hueco y si pasaron 5 s desde su último cambio (ε se aplica igual)
+#            filtros_reac  filtros + 1 s de reacción para notar el cambio del de enfrente
 #   limite = corre solo los primeros `limite` trabajos (para pruebas rápidas); 0 = todos
 #   carriles = corre solo ese número de carriles, p. ej. 2 (opcional, 6.º argumento)
 push!(LOAD_PATH, joinpath(@__DIR__, "..", "..", "src"))
@@ -22,7 +26,11 @@ function parametros(; kw...)
     MODELO == "experimental" && return parametros_experimentales(; kw...)
     MODELO == "reaccion" && return parametros_experimentales(; modelo_aceleracion = :original, t_aviso_giro = 1.0, kw...)
     MODELO == "reaccion05" && return parametros_experimentales(; modelo_aceleracion = :original, t_aviso_giro = 0.5, kw...)
-    error("modelo desconocido: $MODELO (usar original, colisiones, experimental, reaccion o reaccion05)")
+    filtros = (fraccion_necesidad = 0.95, umbral_ganancia = largo, tiempo_entre_cambios = 5.0)
+    MODELO == "filtros" && return parametros_experimentales(; modelo_aceleracion = :original, filtros..., kw...)
+    MODELO == "filtros_reac" && return parametros_experimentales(; modelo_aceleracion = :original, t_aviso_giro = 1.0,
+                                                                filtros..., kw...)
+    error("modelo desconocido: $MODELO (usar original, colisiones, experimental, reaccion, reaccion05, filtros o filtros_reac)")
 end
 
 """ llena los carriles en orden (como generar_distribucion_automatica, generalizado a nc carriles) """
