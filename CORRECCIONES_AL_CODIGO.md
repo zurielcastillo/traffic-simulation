@@ -144,6 +144,7 @@ Las funciones sin archivo están en `src/cambio_de_carril.jl`. Se agregaron dos 
 `validacion/n_carriles/barrido_fino_2c.jl` corre el modelo revisado con ρ = 0.35 a 0.65 en pasos de
 0.02, ε = 0, 0.5, 0.7, 0.79, 0.89 y 1, y 5 semillas: 480 corridas. El modelo es determinista; cada
 semilla mueve la posición inicial de cada auto hasta ±0.1 u (≈ 0.35 m). Resultados en
-`validacion/n_carriles/fino/parte_*.csv` (ρ, ε, semilla, velocidad terminal en m/s, flujo, cambios de
+`validacion/n_carriles/fino/parte_*.csv` (arranque de la tesis), `fino_desorden/` y `fino_uniforme/`
+(cuarto argumento `desorden` o `uniforme`), con columnas ρ, ε, semilla, velocidad terminal en m/s, flujo, cambios de
 carril, segundos con choque). La pérdida de velocidad se mide contra la corrida con ε = 0 de la misma
 semilla.

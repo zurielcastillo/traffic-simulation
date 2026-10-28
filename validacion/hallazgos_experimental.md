@@ -162,3 +162,18 @@ de largo cero encimado con un auto real que lo tapaba para el de atrás (detalle
 
 Pendiente con 3 y 4 carriles: a baja densidad algunos carriles casi no se usan, porque todos los
 autos arrancan en el carril 1, y la corrida de 4 carriles con ρ = 0.73 y ε = 0 se atora (0.3 m/s).
+
+## 7. El efecto del egoísmo depende de la condición inicial (2 carriles, modelo revisado)
+
+Barrido fino (`n_carriles/barrido_fino_2c.jl`, ρ = 0.35 a 0.65, 5 semillas) con tres arranques:
+
+| Arranque | Cambios de carril por corrida | Rango con pérdida ≥ 10 % (ε ≥ 0.7) | Mayor pérdida |
+|---|---|---|---|
+| Tesis: se llena el carril 1, el 2 queda casi vacío (`fino/`) | ≈ 330 | ρ ≈ 0.41 a 0.57 | 36 % (ρ = 0.45, ε = 1) |
+| 50 y 50 al azar, hasta ±45 % del espacio entre autos (`fino_desorden/`) | < 3 | ninguno | < 1 % |
+| 50 y 50 espaciados parejo, ±0.35 m (`fino_uniforme/`) | 0 | ninguno | 0 % |
+
+Con ε = 0 la velocidad terminal es la misma en los tres arranques. En el modelo revisado el egoísmo
+solo pesa cuando hay un desbalance fuerte entre carriles que obliga a muchos cambios de carril. Con
+los carriles igual de llenos, el seguimiento empareja los huecos y casi nadie tiene motivo para
+cambiarse. Falta revisar si el modelo original de la tesis también depende así del arranque.

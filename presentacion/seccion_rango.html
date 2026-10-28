@@ -1,7 +1,9 @@
+<style>#selFino .boton[aria-pressed="true"]{border-color:var(--pintura);color:var(--pintura)}</style>
 <section class="col">
   <div class="eti">Dos carriles · barrido fino</div>
   <h2>¿En qué densidades pesa el egoísmo?</h2>
   <p>Pérdida de velocidad terminal respecto a los conductores cooperativos (ε = 0), con ρ de 0.35 a 0.65 en pasos de 0.02. Cada punto es el promedio de 5 corridas que solo difieren en una pequeña perturbación al azar de la posición inicial de los autos (hasta ±35 cm). La franja va de la corrida con menos pérdida a la de más.</p>
+  <div class="chips" id="selFino"><button class="boton" type="button" data-k="fino" aria-pressed="true">Arranque de la tesis: carril derecho lleno</button><button class="boton" type="button" data-k="fino_desorden" aria-pressed="false">Arranque desordenado: 50 y 50 al azar</button><button class="boton" type="button" data-k="fino_uniforme" aria-pressed="false">Arranque parejo: 50 y 50, espaciados</button></div>
   <div class="leyenda" id="leyFino"></div>
   <div class="graf"><canvas id="gFino"></canvas></div>
   <div class="grande">
@@ -9,4 +11,5 @@
     <div><strong class="c-ego" id="fMax">–</strong><span id="fMaxTxt">mayor pérdida promedio</span></div>
   </div>
   <p class="tenue" id="fNota"></p>
+  <p><b>El efecto depende de cómo arranca el tráfico.</b> Con el arranque de la tesis, un carril lleno y el otro vacío, el egoísmo baja la velocidad en un rango de densidades. Con los dos carriles igual de llenos, parejos o desordenados, casi nadie se cambia de carril y el egoísmo no cambia nada. En el modelo revisado el egoísmo pesa cuando hay un desbalance fuerte entre carriles, como una incorporación o un carril que se cierra, y no en tráfico que ya está repartido.</p>
 </section>

@@ -62,20 +62,28 @@ G["n"] = {str(nc): {"v0": [round(x["vt"], 2) for x in sorted((x for x in fs if g
                     "corridas": len(fs), "roce": sum(x["pasos_choque"] > 0 for x in fs),
                     "grave": sum(x["prof_max"] > 0.25 for x in fs)}
           for nc, fs in ((2, f2), (3, n[3]), (4, n[4]))}
-# barrido fino de 2 carriles (validacion/n_carriles/barrido_fino_2c.jl): ρ, ε, semilla, v, Q, cambios, pasos con choque
+# barrido fino de 2 carriles (validacion/n_carriles/barrido_fino_2c.jl): ρ, ε, semilla, v, Q, cambios, pasos con choque.
+# "fino" usa la condición inicial de la tesis y "fino_uniforme" 50 autos por carril espaciados parejo;
 import csv, statistics as st
-fino = [dict(r=float(x[0]), e=float(x[1]), s=int(x[2]), v=float(x[3]), choque=int(x[6]))
-        for f in sorted(glob.glob(os.path.join(NC, "fino", "parte_*.csv"))) for x in csv.reader(open(f, encoding="utf8"))]
-rf = sorted({x["r"] for x in fino})
-def perdida(e, r):
-    # pérdida de cada semilla respecto a su propia corrida con ε = 0 (misma condición inicial)
-    base = {x["s"]: x["v"] for x in fino if x["r"] == r and x["e"] == 0}
-    return [100*(1 - x["v"]/base[x["s"]]) for x in fino if x["r"] == r and abs(x["e"] - e) < 1e-9 and x["s"] in base]
-G["fino"] = {"rho": rf, "corridas": len(fino), "choques": sum(x["choque"] > 0 for x in fino),
-             "eps": {k: {"media": [round(max(0, st.mean(perdida(float(k), r))), 1) for r in rf],
-                         "min": [round(max(0, min(perdida(float(k), r))), 1) for r in rf],
-                         "max": [round(max(0, max(perdida(float(k), r))), 1) for r in rf]}
-                     for k in ("0.5", "0.7", "0.79", "0.89", "1.0")}}
+def resume_fino(carpeta):
+    fino = [dict(r=float(x[0]), e=float(x[1]), s=int(x[2]), v=float(x[3]), choque=int(x[6]))
+            for f in sorted(glob.glob(os.path.join(NC, carpeta, "parte_*.csv"))) for x in csv.reader(open(f, encoding="utf8"))]
+    rf = sorted({x["r"] for x in fino})
+    def perdida(e, r):
+        # pérdida de cada semilla respecto a su propia corrida con ε = 0 (misma condición inicial)
+        base = {x["s"]: x["v"] for x in fino if x["r"] == r and x["e"] == 0}
+        return [100*(1 - x["v"]/base[x["s"]]) for x in fino if x["r"] == r and abs(x["e"] - e) < 1e-9 and x["s"] in base]
+    return {"rho": rf, "corridas": len(fino), "choques": sum(x["choque"] > 0 for x in fino),
+            "v0": [round(st.mean(x["v"] for x in fino if x["r"] == r and x["e"] == 0), 2) for r in rf],
+            "eps": {k: {"media": [round(max(0, st.mean(perdida(float(k), r))), 1) for r in rf],
+                        "min": [round(max(0, min(perdida(float(k), r))), 1) for r in rf],
+                        "max": [round(max(0, max(perdida(float(k), r))), 1) for r in rf]}
+                    for k in ("0.5", "0.7", "0.79", "0.89", "1.0")}}
+G["fino"] = resume_fino("fino")
+# "fino_desorden": 50 autos por carril movidos al azar hasta ±45 % del espacio entre autos
+for carpeta in ("fino_uniforme", "fino_desorden"):
+    if glob.glob(os.path.join(NC, carpeta, "parte_*.csv")):
+        G[carpeta] = resume_fino(carpeta)
 graves = sum(x["prof_max"] > 0.25 for x in todas); roces = sum(x["pasos_choque"] > 0 for x in todas)
 
 anim = {k: open(os.path.join(ANIM, k + ".js"), encoding="utf8").read() for k in ("heroe", "duelo0", "duelo9")}

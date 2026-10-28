@@ -3,11 +3,16 @@
 #   ρ = 0.35, 0.37, ..., 0.65   ε = 0, 0.5, 0.7, 0.79, 0.89, 1   semillas 1 a 5
 # El modelo es determinista: cada semilla mueve al azar la posición inicial de cada auto hasta
 # ±PERT unidades (0.1 u ≈ 0.35 m) a partir del arreglo de la tesis (se llena primero el carril 1).
-# Uso: julia barrido_fino_2c.jl <worker> <nworkers> <salida.csv>
+# Uso: julia barrido_fino_2c.jl <worker> <nworkers> <salida.csv> [inicial]
+#   inicial = tesis     se llena primero el carril 1 con separación d_0 (como en la tesis; por defecto)
+#             uniforme  50 autos por carril, espaciados de forma pareja en todo el anillo
+#             desorden  50 autos por carril, cada uno movido al azar hasta ±45 % del espacio entre autos
+#                       (como la animación de portada de presentacion_tesis.html)
 push!(LOAD_PATH, joinpath(@__DIR__, "..", "..", "src"))
 using TraficoOpt, Random
 const TO = TraficoOpt
 const largo = 9/7; const d0 = 0.5; const ntot = 100; const pasos = 10000; const PERT = 0.1
+const INICIAL = length(ARGS) > 3 ? ARGS[4] : "tesis"
 
 """ parámetros del modelo revisado (los mismos que `filtros_reac` en corre_n.jl) """
 modelo_revisado(; kw...) = parametros_experimentales(; modelo_aceleracion = :original, t_aviso_giro = 1.0,
@@ -17,14 +22,22 @@ modelo_revisado(; kw...) = parametros_experimentales(; modelo_aceleracion = :ori
 """ una corrida: velocidad terminal (m/s, promedio de 500 a 1000 s), flujo, cambios de carril y choques """
 function corre(ρ, ε, semilla)
     L = ntot*(largo + d0)/(2ρ)
-    mx = floor(Int, L/(largo + d0)); n1 = min(mx, ntot); n2 = ntot - n1
     p = modelo_revisado(L = L, egoismo = ε, d_0 = [d0, d0])
-    est = crear_estado(p, [n1, n2], [d0, d0])
-    # perturbación de la posición inicial (solo en y, dentro del carril)
+    if INICIAL == "uniforme" || INICIAL == "desorden"
+        # misma cantidad de autos en cada carril y la misma separación entre todos
+        n1 = ntot ÷ 2; n2 = ntot - n1; sep = L/n1 - largo
+        est = crear_estado(p, [n1, n2], [sep, sep])
+    else
+        mx = floor(Int, L/(largo + d0)); n1 = min(mx, ntot); n2 = ntot - n1
+        est = crear_estado(p, [n1, n2], [d0, d0])
+    end
+    # perturbación de la posición inicial (solo en y, dentro del carril). Con "desorden" es de hasta
+    # ±45 % del espacio libre entre autos, así nunca se enciman pero los huecos quedan muy disparejos.
     rng = MersenneTwister(semilla)
+    amp = INICIAL == "desorden" ? 0.45*(L/(ntot ÷ 2) - largo) : PERT
     for k in eachindex(est.vehs)
         a = est.vehs[k]
-        est.vehs[k] = TO.Vehiculo(a.ancho, a.largo, a.pos[1], mod(a.pos[2] + PERT*(2rand(rng) - 1), L), k)
+        est.vehs[k] = TO.Vehiculo(a.ancho, a.largo, a.pos[1], mod(a.pos[2] + amp*(2rand(rng) - 1), L), k)
     end
     for k in eachindex(est.vehs); TO.actualiza_cache!(est, k); end
     N = length(est.vehs); orig = copy(est.origen)
